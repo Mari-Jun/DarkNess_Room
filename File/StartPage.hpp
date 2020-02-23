@@ -9,12 +9,15 @@ static HFONT StartPageFont2;
 class ClickButton {							//버튼 클래스
 public:
 	ClickButton(int S, int H, int Q);
+	
 	inline const int GetStartClick() const;
 	inline const int GetHelpClick() const;
 	inline const int GetQuitClick() const;
+
 	const bool StartRange(const int y, const int x) const;					//클릭 범위 확인 함수
 	const bool HelpRange(const int y, const int x) const;					//클릭 범위 확인 함수
 	const bool QuitRange(const int y, const int x) const;					//클릭 범위 확인 함수
+
 	void ChangeStartButton(int Num);										//StartClick 변경
 	void ChangeHelpButton(int Num);											//HelpClick 변경
 	void ChangeQuitButton(int Num);											//QuitClick 변경

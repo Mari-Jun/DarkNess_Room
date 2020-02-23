@@ -3,13 +3,8 @@
 
 void CreateInterface() {
 	//GameInterface에 사용될 Brush및 Pen 생성
-	BackGroundBrush1 = CreateSolidBrush(RGB(50, 50, 50));
-	BackGroundBrush2 = CreateSolidBrush(RGB(153, 56, 0));
-	BackGroundBrush3 = CreateSolidBrush(RGB(0, 0, 0));
 
 	BackGroundPen1 = CreatePen(PS_SOLID, 1, RGB(50, 50, 50));
-	BackGroundPen2 = CreatePen(PS_SOLID, 1, RGB(153, 56, 0));
-	BackGroundPen3 = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
 
 	BackGroundBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 	BackGroundBit2 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
@@ -19,10 +14,11 @@ void CreateInterface() {
 
 void DeleteInterface() {
 	//메모리 해제
-	DeleteObject(BackGroundBrush1);
-	DeleteObject(BackGroundBrush2);
 	DeleteObject(BackGroundPen1);
-	DeleteObject(BackGroundPen2);
+	DeleteObject(BackGroundBit1);
+	DeleteObject(BackGroundBit2);
+	DeleteObject(BackGroundBit3);
+	DeleteObject(BackGroundBit4);
 }
 
 void PaintBackGround(HDC hdc, HDC Bithdc) {

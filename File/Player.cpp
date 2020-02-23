@@ -1,7 +1,6 @@
 #include "Resource.hpp"
 #include "Player.hpp"
 
-
 Player::Player(int X, int Y) : XPos(X), YPos(Y) {
 
 }

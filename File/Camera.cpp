@@ -2,8 +2,6 @@
 #include "Player.hpp"
 #include "Camera.hpp"
 
-
-
 Camera::Camera(int L, int R, int T, int B) : CLeft(L), CRight(R), CTop(T), CBottom(B) {
 
 }

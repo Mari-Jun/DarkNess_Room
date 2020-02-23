@@ -5,6 +5,7 @@ HelpButton::HelpButton(int B, int C) : BackClick(B), CreditClick(C) {
 	//생성자
 }
 
+
 const int HelpButton::GetBackClick() const {
 	//BackClick을 반환한다.
 	return BackClick;

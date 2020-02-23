@@ -5,7 +5,7 @@ class Player;
 
 class Camera {
 public:
-	Camera(int L, int R, int T, int B);
+	Camera(int L, int R, int T, int B);				//카메라 생성자
 
 	const int GetCLeft() const;						//CLeft값을 불러온다
 	const int GetCRight() const;					//CRight값을 불러온다

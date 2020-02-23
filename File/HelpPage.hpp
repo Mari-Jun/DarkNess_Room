@@ -14,12 +14,14 @@ static HBITMAP HealtBit;
 
 class HelpButton {
 public:
-	HelpButton(int B, int C);
-	void HelpInit(int B, int C);
-	inline const int GetBackClick() const;
-	inline const int GetCreditClick() const;
+	HelpButton(int B, int C);		
+
+	inline const int GetBackClick() const;									//BackClick의 값을 얻는다.
+	inline const int GetCreditClick() const;								//Credit의 값을 얻는다.
+
 	const bool BackRange(const int y, const int x) const;					//클릭 범위 확인 함수
-	const bool CreditRange(const int y, const int x) const;				//Credit 범위 확인 함수
+	const bool CreditRange(const int y, const int x) const;					//Credit 범위 확인 함수
+
 	void ChangeBackButton(const int Num);									//BackClick 변경
 	void ChangeCreditButton(const int Num);									//CreditClick 변경
 
