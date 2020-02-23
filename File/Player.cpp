@@ -1,5 +1,5 @@
-#include "Resourec.h"
-#include "Player.h"
+#include "Resource.hpp"
+#include "Player.hpp"
 
 
 Player::Player(int X, int Y) : XPos(X), YPos(Y) {
@@ -29,8 +29,15 @@ void Player::MoveBasic() {
 
 const bool Player::MoveRangeCheck() const {
 	//플레이어 이동 범위 체크 함수
+
+	//테두리 벽
 	if (XPos < LEFTWALL + 10 || XPos > RIGHTWALL - 10 || YPos < TOPWALL + 10 || YPos > BOTTOMWALL - 10)
 		return false;
+
+	//중간 섬
+	if (XPos > LLEFTWALL - 10 && XPos < LRIGHTWALL + 10 && YPos > LTOPWALL - 10 && YPos < LBOTTOMWALL + 10)
+		return false;
+	
 	return true;
 }
 
@@ -62,11 +69,24 @@ void Player::MoveBottom() {
 		YPos -= 10;
 }
 
-
-
 void Player::PaintPlayer(HDC hdc) const {
 
 
 	Rectangle(hdc, XPos - 10, YPos - 10, XPos + 10, YPos + 10);
 
+}
+
+void CreatePlayer(Player** player) {
+	if (*player == NULL) {
+		//*player가 NULL일 경우 생성한다.
+		*player = new Player(640, 450);
+	}
+
+}
+void DeletePlayer(Player** player) {
+	if (*player != NULL) {
+		//*player가 NULL이 아닐경우 제거한다.
+		delete* player;
+		*player = NULL;
+	}
 }

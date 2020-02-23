@@ -1,4 +1,4 @@
-#include "Sound.h"
+#include "Sound.hpp"
 
 void SoundInit() {
 	FMOD_System_Create(&M_System);

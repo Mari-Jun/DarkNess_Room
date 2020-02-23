@@ -1,5 +1,5 @@
-#include "Resourec.h"
-#include "LoadingPage.h"
+#include "Resource.hpp"
+#include "LoadingPage.hpp"
 
 void CreateLoadingPage() {
 	LoadingPageFont1 = CreateFontW(20, 10, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));

@@ -1,5 +1,5 @@
-#include "Resourec.h"
-#include "Interface.h"
+#include "Resource.hpp"
+#include "Interface.hpp"
 
 void CreateInterface() {
 	//GameInterface에 사용될 Brush및 Pen 생성
@@ -10,6 +10,11 @@ void CreateInterface() {
 	BackGroundPen1 = CreatePen(PS_SOLID, 1, RGB(50, 50, 50));
 	BackGroundPen2 = CreatePen(PS_SOLID, 1, RGB(153, 56, 0));
 	BackGroundPen3 = CreatePen(PS_SOLID, 1, RGB(0, 0, 0));
+
+	BackGroundBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	BackGroundBit2 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	BackGroundBit3 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface3.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	BackGroundBit4 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface4.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 }
 
 void DeleteInterface() {
@@ -20,47 +25,33 @@ void DeleteInterface() {
 	DeleteObject(BackGroundPen2);
 }
 
-void PaintBackGround(HDC hdc) {
+void PaintBackGround(HDC hdc, HDC Bithdc) {
 
 	//겉 테두리 그리기 (전체맵)
-	OldBackGroundBrush = (HBRUSH)SelectObject(hdc, BackGroundBrush1);
-	SelectObject(hdc, BackGroundPen1);
-
-	Rectangle(hdc, 0, 0, ALLMAPX, ALLMAPY);
+	SelectObject(Bithdc, BackGroundBit1);
+	BitBlt(hdc, 0, 0, ALLMAPX, ALLMAPY, Bithdc, 0, 0, SRCCOPY);
 
 	//벽(카메라맵) 그리기
-	SelectObject(hdc, BackGroundBrush2);
-	SelectObject(hdc, BackGroundPen2);
+	SelectObject(Bithdc, BackGroundBit2);
+	BitBlt(hdc, CLEFTWALL, CTOPWALL, CRIGHTWALL - CLEFTWALL, CBOTTOMWALL - CTOPWALL, Bithdc, 0, 0, SRCCOPY);
 
-	Rectangle(hdc, CLEFTWALL, CTOPWALL, CRIGHTWALL, CBOTTOMWALL);
 
 	//플레이 맵 그리기
-	SelectObject(hdc, BackGroundBrush3);
-	SelectObject(hdc, BackGroundPen3);
+	SelectObject(Bithdc, BackGroundBit3);
+	BitBlt(hdc, LEFTWALL, TOPWALL, RIGHTWALL - LEFTWALL, BOTTOMWALL - TOPWALL, Bithdc, 0, 0, SRCCOPY);
 
-	Rectangle(hdc, LEFTWALL, TOPWALL, RIGHTWALL, BOTTOMWALL);
+
+	//중간 섬 그리기
+	SelectObject(Bithdc, BackGroundBit2);
+	BitBlt(hdc, LLEFTWALL, LTOPWALL, 240, 240, Bithdc, 0, 0, SRCCOPY);
+	
 	
 	//플레이어 인터페이스 그리기
-
-	Rectangle(hdc, PLEFTWALL, PTOPWALL, PRIGHTWALL, PBOTTOMWALL);
-
-	SelectObject(hdc, OldBackGroundBrush);
+	SelectObject(Bithdc, BackGroundBit4);
+	BitBlt(hdc, PLEFTWALL, PTOPWALL, PRIGHTWALL - PLEFTWALL, PBOTTOMWALL - PTOPWALL, Bithdc, 0, 0, SRCCOPY);
 
 
-	//기본적인 맵 그리기
-	//SelectObject(hdc, BackGroundBrush1);
 	SelectObject(hdc, BackGroundPen1);
-	/*
-	//작은 사각형 만들기
-	Rectangle(hdc, 0, 0, 1280, 20);
-	Rectangle(hdc, 0, 0, 50, 80);
-	Rectangle(hdc, 1230, 0, 1280, 80);
-
-	//큰 사각형 만들기
-	Rectangle(hdc, 0, UPWALL - 100, 1280, UPWALL);
-	Rectangle(hdc, LEFTWALL - 100, 80, LEFTWALL, 820);
-	Rectangle(hdc, 0, DOWNWALL, 1280, DOWNWALL + 100);
-	Rectangle(hdc, RIGHTWALL, 80, RIGHTWALL + 100, 820);*/
 
 	//선 그리기
 	for (int x = LEFTWALL + 60; x < RIGHTWALL; x += 60) {

@@ -1,5 +1,5 @@
-#include "Resourec.h"
-#include "StartPage.h"
+#include "Resource.hpp"
+#include "StartPage.hpp"
 
 ClickButton::ClickButton(int S, int H, int Q) : StartClick(S), HelpClick(H), QuitClick(Q)
 {	//»ý¼ºÀÚ

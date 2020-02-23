@@ -1,5 +1,5 @@
-#include "Resourec.h"
-#include "CreditPage.h"
+#include "Resource.hpp"
+#include "CreditPage.hpp"
 
 //CreditPage Á¤ÀÇ
 

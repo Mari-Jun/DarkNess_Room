@@ -1,6 +1,6 @@
-#include "Resourec.h"
-#include "Player.h"
-#include "Camera.h"
+#include "Resource.hpp"
+#include "Player.hpp"
+#include "Camera.hpp"
 
 
 
@@ -61,6 +61,28 @@ void Camera::MoveBottom() {
 	}
 }
 
+void Camera::CameraMove(Player* player) {
+	if (CLeft + 100 > player->GetXPos()) {
+		//XPos값이 CLeft+100보다 작아졌을 경우 실행한다.
+		MoveLeft();
+	}
+
+	if (CRight - 100 < player->GetXPos()) {
+		//XPos값이 CRight값-100보다 커졌을 경우 실행한다.
+		MoveRight();
+	}
+
+	if (CTop + 100 > player->GetYPos()) {
+		//YPos값이 CTop+100보다 작아졌을 경우 실행한다.
+		MoveTop();
+	}
+
+	if (CBottom - 100 < player->GetYPos()) {
+		//YPos값이 CBottom값-100보다 커졌을 경우 실행한다.
+		MoveBottom();
+	}
+}
+
 void CreateCamera(Camera** camera) {
 	if (*camera == NULL) {
 		//카메라 생성
@@ -73,27 +95,5 @@ void DeleteCamera(Camera** camera) {
 		//카메라 제거
 		delete* camera;
 		*camera = NULL;
-	}
-}
-
-void CameraMove(Camera* camera, Player* player) {
-	if (camera->GetCLeft() + 100 > player->GetXPos()) {
-		//XPos값이 CLeft+100보다 작아졌을 경우 실행한다.
-		camera->MoveLeft();
-	}
-
-	if (camera->GetCRight() - 100 < player->GetXPos()) {
-		//XPos값이 CRight값-100보다 커졌을 경우 실행한다.
-		camera->MoveRight();
-	}
-	
-	if(camera->GetCTop() + 100 > player->GetYPos()) {
-		//YPos값이 CTop+100보다 작아졌을 경우 실행한다.
-		camera->MoveTop();
-	}
-
-	if (camera->GetCBottom() - 100 < player->GetYPos()) {
-		//YPos값이 CBottom값-100보다 커졌을 경우 실행한다.
-		camera->MoveBottom();
 	}
 }

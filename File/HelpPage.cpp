@@ -1,5 +1,5 @@
-#include "Resourec.h"
-#include "HelpPage.h"
+#include "Resource.hpp"
+#include "HelpPage.hpp"
 
 HelpButton::HelpButton(int B, int C) : BackClick(B), CreditClick(C) {
 	//»ý¼ºÀÚ
