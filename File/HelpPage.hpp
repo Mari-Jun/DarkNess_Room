@@ -14,7 +14,7 @@ static HBITMAP HealtBit;
 
 class HelpButton {
 public:
-	HelpButton(int B, int C);		
+	explicit HelpButton(int B, int C);		
 
 	inline const int GetBackClick() const;									//BackClick의 값을 얻는다.
 	inline const int GetCreditClick() const;								//Credit의 값을 얻는다.

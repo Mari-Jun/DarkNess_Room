@@ -106,13 +106,13 @@ void PaintHelpPage(HDC hdc, HDC Bithdc, const HelpButton* Help) {
 	SetTextColor(hdc, RGB(222, 100, 30));
 	//Help 관련 글을 작성한다.
 	TextOut(hdc, 450, 300, _T("Move : ← , ↑ , → , ↓"), 21);
-	TextOut(hdc, 470, 380, _T("Health :"), 8);
-	TextOut(hdc, 730, 380, _T("X 5"), 3);
-	TextOut(hdc, 270, 460, _T("Item1 : Q"), 9);
-	TextOut(hdc, 600, 460, _T("[Healing Your HP1]"), 18);
-	TextOut(hdc, 270, 540, _T("Item2 : W"), 9);
+	TextOut(hdc, 450, 380, _T("Health :"), 8);
+	TextOut(hdc, 710, 380, _T("X 100"), 5);
+	TextOut(hdc, 260, 460, _T("Skill1 : Q"), 10);
+	TextOut(hdc, 600, 460, _T("[Healing Your HP20]"), 19);
+	TextOut(hdc, 260, 540, _T("Skill2 : W"), 10);
 	TextOut(hdc, 600, 540, _T("[One Way Defense]"), 17);
-	TextOut(hdc, 270, 620, _T("Item3 : E"), 9);
+	TextOut(hdc, 260, 620, _T("Skill3 : E"), 10);
 	TextOut(hdc, 600, 620, _T("[No Damage]"), 11);
 
 
@@ -129,7 +129,7 @@ void PaintHelpPage(HDC hdc, HDC Bithdc, const HelpButton* Help) {
 	TransparentBlt(hdc, 520, 620, 50, 50, Bithdc, 0, 0, 50, 50, RGB(0, 0, 0));
 	//HP 비트맵 작성
 	SelectObject(Bithdc, HealtBit);
-	TransparentBlt(hdc, 650, 380, 50, 50, Bithdc, 0, 0, 50, 50, RGB(0, 0, 0));
+	TransparentBlt(hdc, 630, 380, 50, 50, Bithdc, 0, 0, 50, 50, RGB(0, 0, 0));
 
 	SelectObject(Bithdc, OldItemBit);
 

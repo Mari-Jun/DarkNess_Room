@@ -1,10 +1,11 @@
 #include "Resource.hpp"
+#include "Player.hpp"
 #include "Enemy.hpp"
 
 
 //기본 에너미
 
-Enemy::Enemy(int X, int Y, bool C) : XPos(X), YPos(Y), Charging(C) {
+Enemy::Enemy(int X, int Y, bool C, int D) : XPos(X), YPos(Y), Charging(C), Delay(D) {
 
 }
 
@@ -23,6 +24,11 @@ const bool Enemy::GetCharging() const {
 	return Charging;
 }
 
+const int Enemy::GetDelay() const {
+	//Delay값을 반환한다.
+	return Delay;
+}
+
 void Enemy::ChangeCharging() {
 	//Charging값을 true로 바꾼다.
 	Charging = true;
@@ -34,12 +40,16 @@ void Enemy::SetCharging() {
 }
 
 
+void Enemy::ChangeDelay() {
+
+}
+
 
 
 
 //직선포 에너미
 
-LineEnemy::LineEnemy(int X, int Y, int C, int R) : Enemy(X, Y, C), Range(R) {
+LineEnemy::LineEnemy(int X, int Y, bool C, int D, int R) : Enemy(X, Y, C, D), Range(R) {
 
 }
 
@@ -52,11 +62,15 @@ void LineEnemy::SetRange() {
 
 }
 
-void LineEnemy::PaintLEnmey(HDC hdc) const {
-
+const bool LineEnemy::HitPlayer(Player* player) const {
+	return false;
 }
 
-void LineEnemy::PaintLShot(HDC hdc) const {
+void LineEnemy::PaintEnmey(HDC hdc) const {
+	Rectangle(hdc, GetXPos() - 25, GetYPos() - 35, GetXPos() + 25, GetYPos() + 35);
+}
+
+void LineEnemy::PaintShot(HDC hdc) const {
 
 }
 
@@ -65,7 +79,7 @@ void LineEnemy::PaintLShot(HDC hdc) const {
 
 //광역포 에너미
 
-WideEnemy::WideEnemy(int X, int Y, int C, int D) : Enemy(X, Y, C), Direction(D) {
+WideEnemy::WideEnemy(int X, int Y, bool C, int D, int Di) : Enemy(X, Y, C, D), Direction(Di) {
 
 }
 
@@ -74,11 +88,19 @@ const int WideEnemy::GetDirection() const {
 	return  Direction;
 }
 
-void WideEnemy::PaintWEnmey(HDC hdc) const {
+void WideEnemy::SetDirection() {
 
 }
 
-void WideEnemy::PaintWShot(HDC hdc) const {
+const bool WideEnemy::HitPlayer(Player* player) const {
+	return false;
+}
+
+void WideEnemy::PaintEnmey(HDC hdc) const {
+
+}
+
+void WideEnemy::PaintShot(HDC hdc) const {
 
 }
 
@@ -87,7 +109,7 @@ void WideEnemy::PaintWShot(HDC hdc) const {
 
 //폭탄 에너미
 
-BombEnemy::BombEnemy(int X, int Y, int C, int DX, int DY) : Enemy(X, Y, C), DXPos(DX), DYPos(DY) {
+BombEnemy::BombEnemy(int X, int Y, bool C, int D, int DX, int DY) : Enemy(X, Y, C, D), DXPos(DX), DYPos(DY) {
 
 }
 
@@ -101,15 +123,19 @@ const int BombEnemy::GetDYPos() const {
 	return DYPos;
 }
 
+const bool BombEnemy::HitPlayer(Player* player) const {
+	return false;
+}
+
 void BombEnemy::SetDropPos() {
 
 }
 
-void BombEnemy::PaintBEnmey(HDC hdc) const {
+void BombEnemy::PaintEnmey(HDC hdc) const {
 
 }
 
-void BombEnemy::PaintBShot(HDC hdc) const {
+void BombEnemy::PaintShot(HDC hdc) const {
 
 }
 
@@ -118,7 +144,7 @@ void BombEnemy::PaintBShot(HDC hdc) const {
 
 //범위포 에너미
 
-RectEnemy::RectEnemy(int X, int Y, int C, int DX, int DY, int Co) : BombEnemy(X, Y, C, DX, DY), Count(Co) {
+RectEnemy::RectEnemy(int X, int Y, bool C, int D, int DX, int DY, int Co) : BombEnemy(X, Y, C, D, DX, DY), Count(Co) {
 
 }
 
@@ -131,12 +157,37 @@ void RectEnemy::SetCount() {
 
 }
 
-void RectEnemy::PaintREnmey(HDC hdc) const {
+const bool RectEnemy::HitPlayer(Player* player) const {
+	return false;
+}
+
+void RectEnemy::PaintEnmey(HDC hdc) const {
 
 }
 
-void RectEnemy::PaintRShot(HDC hdc) const {
+void RectEnemy::PaintShot(HDC hdc) const {
 
 }
 
 
+void CreateLEnemy(LineEnemy** Lenemy) {
+	for (int i = 0; i < 20; i++) {
+		if (Lenemy[i] == NULL) {
+			//Lenemy[i]가 NULL이면 생성
+			Lenemy[i] = new LineEnemy(150 + 60 * i, 75, true, 10, 10);
+		}
+		
+	}
+}
+
+void CreateWEnemy(WideEnemy** Wenemy) {
+
+}
+
+void CreateBEnemy(BombEnemy** Benemy) {
+
+}
+
+void CreateREnemy(RectEnemy** Renemy) {
+
+}

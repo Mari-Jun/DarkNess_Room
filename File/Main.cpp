@@ -7,6 +7,7 @@
 #include "HelpPage.hpp"
 #include "CreditPage.hpp"
 #include "Camera.hpp"
+#include "Enemy.hpp"
 
 
 
@@ -62,8 +63,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//StartPage HDC
 	static HDC Startdc1, Startdc2;
 
-	//GamePlay HDC 1: 기본, 2: 비트맵
-	static HDC Gamedc1, Gamedc2;
+	//GamePlay HDC 1: 기본, 2: 비트맵, 3: 임시
+	static HDC Gamedc1, Gamedc2, Gamedc3, Gamedc4;
 
 	//HelpPage HDC
 	static HDC Helpdc1;
@@ -84,6 +85,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static ClickButton* Click;
 	static HelpButton* Help = NULL;
 	static Camera* camera;
+	static LineEnemy* Lenemy[80];
+	//static LineEnemy* LEnemy;
+	//static WideEnemy* WEnemy;
+	//static BombEnemy* BEnemy;
+	//static RectEnemy* REnemy;
 
 	//마우스 좌표
 	int Mx, My;
@@ -324,7 +330,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					LoadingCount++;
 
 				if (LoadingCount == 100) {
-
 					//게임 화면 페이지인 10으로 Page를 변경한다.
 					Page = 10;
 
@@ -339,6 +344,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 					//카메라 생성
 					CreateCamera(&camera);
+
+					//적 생성
+					CreateLEnemy(Lenemy);
 					
 				}
 			}
@@ -459,7 +467,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	
 			//Gamedc1에 GameMap을 그려준다.
 			PaintBackGround(Gamedc1, Gamedc2);
+
+			//플레이어 관련을 Gamedc1에 그려준다.
 			player->PaintPlayer(Gamedc1);
+			player->PaintPlayerIF(Gamedc1);
+
+			//에너미들을 Gamedc1에 그려준다.
+			for(int L=0; L<20; L++)
+				Lenemy[L]->PaintEnmey(Gamedc1);
+			
 
 			//Gamedc1에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.
 
@@ -483,10 +499,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				BitBlt(mem1dc, 1250, 0, 30, 700, Gamedc1, ALLMAPX - 30, 0, SRCCOPY);
 			}
 				
-			if (GamePageLoading >= 700) 
+			if (GamePageLoading >= 700) {
 				//700이상이 되어야만 복사를 시작한다.
 				//플레이어 인터페이스 복사
-				BitBlt(mem1dc, 0, 700, ScreenX, GamePageLoading-700, Gamedc1, 0, ALLMAPY - 120, SRCCOPY);
+				BitBlt(mem1dc, 0, 700, ScreenX, GamePageLoading - 700, Gamedc1, 0, ALLMAPY - 120, SRCCOPY);
+
+				//인터페이스 오른쪽 테두리 복사
+				BitBlt(mem1dc, ScreenX - 30, 700, 30, GamePageLoading - 700, Gamedc1, ALLMAPX - 30, ALLMAPY - 120, SRCCOPY);
+			}
+				
 			
 			if (GamePageLoading >= 30) {
 				//30이상이 되어야만 복사를 시작한다.

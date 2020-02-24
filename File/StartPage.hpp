@@ -8,7 +8,7 @@ static HFONT StartPageFont2;
 //StartPage 버튼 클래스
 class ClickButton {							//버튼 클래스
 public:
-	ClickButton(int S, int H, int Q);
+	explicit ClickButton(int S, int H, int Q);
 	
 	inline const int GetStartClick() const;
 	inline const int GetHelpClick() const;
