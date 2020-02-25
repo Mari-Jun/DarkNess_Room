@@ -4,6 +4,10 @@
 static const double PI = 3.1415926535897;
 
 static HBRUSH PlayerIFBrush1;
+static HBRUSH OldPBrush;
+
+static HPEN PlayerPen1;
+static HPEN OldPPen;
 
 static HFONT PlayerIFFont1;
 static HFONT PlayerIFFont2;

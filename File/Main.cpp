@@ -63,8 +63,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//StartPage HDC
 	static HDC Startdc1, Startdc2;
 
-	//GamePlay HDC 1: 기본, 2: 비트맵, 3: 임시
-	static HDC Gamedc1, Gamedc2, Gamedc3, Gamedc4;
+	//GamePlay HDC 1: 기본, 2: 비트맵
+	static HDC Gamedc1, Gamedc2;
 
 	//HelpPage HDC
 	static HDC Helpdc1;
@@ -85,6 +85,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static ClickButton* Click;
 	static HelpButton* Help = NULL;
 	static Camera* camera;
+	static Interface* Inter;
 	static LineEnemy* Lenemy[80];
 	//static LineEnemy* LEnemy;
 	//static WideEnemy* WEnemy;
@@ -109,6 +110,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//GamePage시작시 효과 구현을 위해 필요한 변수
 	static int GamePageLoading = 0;
 
+	//GameTime을 나타내는 변수
+	static int GameTime = 0;
+
+	//현재 에너미별 발사 된 수
+	static int LShot = 0, WShot = 0;
+
+	//최대 에너미별 발사 수
+	static int LMaxShot = 0, WMaxShot = 0;
+
 
 	switch (iMsg)
 	{
@@ -119,7 +129,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		CreateLoadingPage();
 		//Loading 타이머 세팅
 		SetTimer(hwnd, 1, 10, NULL);
-		
+		//랜덤을 위한
+		srand(unsigned int(time(NULL)));		
 		break;
 	case WM_GETMINMAXINFO:
 		//화면 고정
@@ -137,7 +148,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			//임시 코드
 			Page = 1;
 			KillTimer(hwnd, 10);
-			DeleteInterface();
+			DeleteInterface(&Inter);
 			CreateStartPage(&Click);
 			PlayStartBKSound();
 			PlayLightningSound();
@@ -187,7 +198,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				}
 				else if (Page == 4) {
 					//종료
-					DeleteInterface();
+					DeleteStartPage(&Click);
 					exit(0);
 				}
 			}
@@ -334,7 +345,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					Page = 10;
 
 					//인터페이스를 생성한다.
-					CreateInterface();
+					CreateInterface(&Inter);
 
 					//게임 BGM을 실행한다.
 					PlayGameBKSound();
@@ -365,9 +376,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			break;
 		case 10:
 			//Start버튼을 눌렀을때 작동한다.
+
 			//플레이어 이동 함수 호출
 			player->MoveBasic();
+			//카메라 이동 함수 호출
 			camera->CameraMove(player);
+
+			//레벨에 따른 세팅 구현할 차례입니당!
+			switch (Inter->GetLevel()) {
+			case 1:
+				//직선포 최대 20개
+				LMaxShot = 20;
+				break;
+			}
+
+			GameTime++;
+			if (GameTime == 10) {
+				for (LShot; LShot < LMaxShot; LShot++) {
+					SelectLShot(Lenemy);
+				}
+			}
+
+
 			break;
 
 		}
@@ -466,15 +496,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			OldGamePlayBit1 = (HBITMAP)SelectObject(Gamedc1, GamePlayBit1);
 	
 			//Gamedc1에 GameMap을 그려준다.
-			PaintBackGround(Gamedc1, Gamedc2);
+			Inter->PaintBackGround(Gamedc1, Gamedc2);
+
+			//에너미들을 Gamedc1에 그려준다.
+			for(int L=0; L<80; L++)
+				Lenemy[L]->PaintEnmey(Gamedc1);
+
+
+			//발사체들을 Gamedc1에 그려준다.
+			for (int L = 0; L < 80; L++)
+				Lenemy[L]->PaintShot(Gamedc1);
+
 
 			//플레이어 관련을 Gamedc1에 그려준다.
 			player->PaintPlayer(Gamedc1);
 			player->PaintPlayerIF(Gamedc1);
-
-			//에너미들을 Gamedc1에 그려준다.
-			for(int L=0; L<20; L++)
-				Lenemy[L]->PaintEnmey(Gamedc1);
 			
 
 			//Gamedc1에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.
@@ -536,7 +572,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		break;
 	
 	case WM_DESTROY:
-		DeleteInterface();
 		PostQuitMessage(0);
 		break;
 	}

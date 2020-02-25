@@ -145,9 +145,11 @@ void Player::PaintPlayer(HDC hdc) const {
 		this->SetPoint(Pos, Rad);
 	}
 
+	OldPPen = (HPEN)SelectObject(hdc, PlayerPen1);
+
 	Polygon(hdc, Pos, 5);
-	
-	//XPoint += float(-Speed * cos(M_PI / 180 * 45)), YPoint += float(Speed * sin(M_PI / 180 * 45)), Roll = -1;
+
+	SelectObject(hdc, OldPPen);
 }
 
 
@@ -196,7 +198,7 @@ void Player::PaintPlayerIF(HDC hdc) const {
 	TextOut(hdc, 1110, PTOPWALL + 5, _T("00:00:00"), 8);
 
 	//기본 비트맵 틀
-	SelectObject(hdc, PlayerIFBrush1);
+	OldPBrush = (HBRUSH)SelectObject(hdc, PlayerIFBrush1);
 	Rectangle(hdc, 90, PTOPWALL + 5, 490, PBOTTOMWALL - 5);
 	Rectangle(hdc, 550, PTOPWALL + 5, 600, PBOTTOMWALL - 5);
 	Rectangle(hdc, 660, PTOPWALL + 5, 710, PBOTTOMWALL - 5);
@@ -209,6 +211,8 @@ void Player::PaintPlayerIF(HDC hdc) const {
 	TextOut(hdc, 560, PTOPWALL + 15, _T("20"), 2);
 	TextOut(hdc, 670, PTOPWALL + 15, _T("40"), 2);
 	TextOut(hdc, 780, PTOPWALL + 15, _T("60"), 2);
+
+	SelectObject(hdc, OldPBrush);
 }
 
 
@@ -219,6 +223,8 @@ void CreatePlayer(Player** player) {
 		*player = new Player(640, 450, 100, 0, 0, 0);
 
 		PlayerIFBrush1 = CreateSolidBrush(RGB(0, 0, 0));
+
+		PlayerPen1 = CreatePen(PS_SOLID, 1, RGB(204, 61, 61));
 
 		PlayerIFFont1 = CreateFontW(50, 15, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Algerian"));
 		PlayerIFFont2 = CreateFontW(30, 10, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
@@ -231,6 +237,7 @@ void DeletePlayer(Player** player) {
 		delete* player;
 		*player = NULL;
 		DeleteObject(PlayerIFBrush1);
+		DeleteObject(PlayerPen1);
 		DeleteObject(PlayerIFFont1);
 		DeleteObject(PlayerIFFont2);
 	}

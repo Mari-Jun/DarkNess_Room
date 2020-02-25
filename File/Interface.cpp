@@ -1,28 +1,29 @@
 #include "Resource.hpp"
 #include "Interface.hpp"
 
-void CreateInterface() {
-	//GameInterface에 사용될 Brush및 Pen 생성
-
-	BackGroundPen1 = CreatePen(PS_SOLID, 1, RGB(50, 50, 50));
-
-	BackGroundBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-	BackGroundBit2 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-	BackGroundBit3 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface3.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-	BackGroundBit4 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface4.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+Interface::Interface(int L, int P) : Level(L), Percent(P) {
 
 }
 
-void DeleteInterface() {
-	//메모리 해제
-	DeleteObject(BackGroundPen1);
-	DeleteObject(BackGroundBit1);
-	DeleteObject(BackGroundBit2);
-	DeleteObject(BackGroundBit3);
-	DeleteObject(BackGroundBit4);
+const int Interface::GetLevel() const {
+	//Level을 반환한다.
+	return Level;
 }
 
-void PaintBackGround(HDC hdc, HDC Bithdc) {
+const int Interface::GetPercent() const {
+	//Percent를 반환한다.
+	return Percent;
+}
+
+void Interface::ChangeLevel() {
+
+}
+
+void Interface::ChangePercent() {
+
+}
+
+void Interface::PaintBackGround(HDC hdc, HDC Bithdc) {
 
 	//겉 테두리 그리기 (전체맵)
 	SelectObject(Bithdc, BackGroundBit1);
@@ -51,29 +52,60 @@ void PaintBackGround(HDC hdc, HDC Bithdc) {
 
 
 	//플레이 맵 그리기
-	SelectObject(Bithdc, BackGroundBit3);
-	BitBlt(hdc, LEFTWALL, TOPWALL, RIGHTWALL - LEFTWALL, BOTTOMWALL - TOPWALL, Bithdc, 0, 0, SRCCOPY);
+	//SelectObject(Bithdc, BackGroundBit3);
+	//BitBlt(hdc, LEFTWALL, TOPWALL, RIGHTWALL - LEFTWALL, BOTTOMWALL - TOPWALL, Bithdc, 0, 0, SRCCOPY);
 
 	//중간 섬 그리기
 	SelectObject(Bithdc, BackGroundBit2);
 	BitBlt(hdc, LLEFTWALL, LTOPWALL, 240, 240, Bithdc, 0, 0, SRCCOPY);
-	
-	
+
+
 	//플레이어 인터페이스 그리기
 	SelectObject(Bithdc, BackGroundBit4);
 	BitBlt(hdc, PLEFTWALL, PTOPWALL, PRIGHTWALL - PLEFTWALL, PBOTTOMWALL - PTOPWALL, Bithdc, 0, 0, SRCCOPY);
 
 
-	SelectObject(hdc, BackGroundPen1);
+	OldBackGroundPen = (HPEN)SelectObject(hdc, BackGroundPen1);
 
 	//선 그리기
 	for (int x = LEFTWALL + 60; x < RIGHTWALL; x += 60) {
 		MoveToEx(hdc, x, TOPWALL, NULL);
-		LineTo(hdc, x, BOTTOMWALL);		
+		LineTo(hdc, x, BOTTOMWALL);
 	}
 	for (int y = TOPWALL + 60; y < BOTTOMWALL; y += 60) {
 		MoveToEx(hdc, LEFTWALL, y, NULL);
 		LineTo(hdc, RIGHTWALL, y);
 	}
 
+	SelectObject(hdc, OldBackGroundPen);
+}
+
+void CreateInterface(Interface** inter) {
+	if (*inter == NULL) {
+		*inter = new Interface(1, 0);
+
+		//GameInterface에 사용될 Brush및 Pen 생성
+
+		BackGroundPen1 = CreatePen(PS_SOLID, 1, RGB(50, 50, 50));
+
+		BackGroundBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		BackGroundBit2 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		BackGroundBit3 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface3.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		BackGroundBit4 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Interface4.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	}
+	
+
+}
+
+void DeleteInterface(Interface** inter) {
+	if (*inter != NULL) {
+		delete* inter;
+		*inter = NULL;
+		//메모리 해제
+		DeleteObject(BackGroundPen1);
+		DeleteObject(BackGroundBit1);
+		DeleteObject(BackGroundBit2);
+		DeleteObject(BackGroundBit3);
+		DeleteObject(BackGroundBit4);
+	}
 }
