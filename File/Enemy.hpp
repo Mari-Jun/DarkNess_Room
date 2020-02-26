@@ -1,9 +1,6 @@
 #pragma once
 #include "windows.h"
 
-static int EDelay[100];
-static int ECharging[100];
-
 static HBRUSH OldEBrush;
 static HPEN OldEPen;
 
@@ -20,12 +17,11 @@ public:
 	const int GetDelay() const;										//Delay값 얻기
 	
 	void SetCharging();												//Charging값을 지정한다. (사실상 고정)
-	void ChangeCharging();											//Charging값을 1씩 감소시킨다.
+	bool ChangeCharging();											//Charging값을 1씩 감소시킨다.
 	void SetDelay();												//Delay값을 지정한다.
-	void ChangeDelay();												//Delay값을 1씩 감소시킨다.
+	bool ChangeDelay();												//Delay값을 1씩 감소시킨다.
 
-	//모든 적 순수 가상함수
-	virtual const bool HitPlayer(Player* player) const = 0;			//피격 확인	
+	virtual void SetHitCheck(Player* player, bool OnOff) = 0;		//HitCheck를 설정한다.
 
 	virtual void PaintEnmey(HDC hdc) const = 0;
 	virtual void PaintShot(HDC hdc) const = 0;
@@ -58,7 +54,7 @@ public:
 
 	void SetRange();											//Range값을 정한다.
 
-	virtual const bool HitPlayer(Player* player) const;			//피격 확인
+	virtual void SetHitCheck(Player* player, bool OnOff);
 		
 	virtual void PaintEnmey(HDC hdc) const;						//직선포적 적을 그린다.
 	virtual void PaintShot(HDC hdc) const;						//직선포적 포를 그린다.
@@ -70,6 +66,7 @@ private:
 void CreateLEnemy(LineEnemy** Lenemy);
 void DeleteLEnemy(LineEnemy** Lenemy);
 void SelectLShot(LineEnemy** Lenemy);
+int ChangeLInfo(LineEnemy** Lenmey, Player* player);
 
 
 
@@ -82,7 +79,7 @@ public:
 
 	void SetDirection();										//Direction값을 정한다.
 
-	virtual const bool HitPlayer(Player* player) const;			//피격 확인
+	virtual void SetHitCheck(Player* player, bool OnOff);
 
 	virtual void PaintEnmey(HDC hdc) const;						//광역포적 적을 그린다.
 	virtual void PaintShot(HDC hdc) const;						//광역포적 포를 그린다.
@@ -100,7 +97,7 @@ public:
 
 	virtual void SetDropPos();									//DXPos값과 DYPos값을 정한다.
 
-	virtual const bool HitPlayer(Player* player) const;			//피격 확인
+	virtual void SetHitCheck(Player* player, bool OnOff);
 
 	virtual void PaintEnmey(HDC hdc) const;						//폭탄적 적을 그린다.
 	virtual void PaintShot(HDC hdc) const;						//폭탄적 폭탄을 그린다.
@@ -118,7 +115,7 @@ public:
 
 	void SetCount();												//Count값을 정한다.
 
-	virtual const bool HitPlayer(Player* player) const;				//피격 확인
+virtual void SetHitCheck(Player* player, bool OnOff);
 
 	virtual void PaintEnmey(HDC hdc) const;							//범위포적 적을 그린다.
 	virtual void PaintShot(HDC hdc) const;							//범위포적 포를 그린다.

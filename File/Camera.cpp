@@ -60,22 +60,22 @@ void Camera::MoveBottom() {
 }
 
 void Camera::CameraMove(Player* player) {
-	if (CLeft + 100 > player->GetXPos()) {
+	if (CLeft + 200 > player->GetXPos()) {
 		//XPos값이 CLeft+100보다 작아졌을 경우 실행한다.
 		MoveLeft();
 	}
 
-	if (CRight - 100 < player->GetXPos()) {
+	if (CRight - 200 < player->GetXPos()) {
 		//XPos값이 CRight값-100보다 커졌을 경우 실행한다.
 		MoveRight();
 	}
 
-	if (CTop + 100 > player->GetYPos()) {
+	if (CTop + 200 > player->GetYPos()) {
 		//YPos값이 CTop+100보다 작아졌을 경우 실행한다.
 		MoveTop();
 	}
 
-	if (CBottom - 100 < player->GetYPos()) {
+	if (CBottom - 200 < player->GetYPos()) {
 		//YPos값이 CBottom값-100보다 커졌을 경우 실행한다.
 		MoveBottom();
 	}

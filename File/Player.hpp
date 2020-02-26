@@ -12,10 +12,12 @@ static HPEN OldPPen;
 static HFONT PlayerIFFont1;
 static HFONT PlayerIFFont2;
 
+static HBITMAP HealthBit;
+
 class Player {
 
 public:
-	explicit Player(int X, int Y, int H, int Q, int W, int E);	
+	explicit Player(int X, int Y, int H, int Q, int W, int E, int HC);	
 		
 	//플레이어 관련
 	const int GetXPos() const;								//XPos값을 불러온다.
@@ -37,7 +39,17 @@ public:
 	const int GetSkillW() const;							//SkillW값을 반환한다.
 	const int GetSkillE() const;							//SkillE값을 반환한다.
 
-	void PaintPlayerIF(HDC hdc) const;						//Player 인터페이스 그리기
+	void UseSkill(WPARAM wParam);							//Skill 사용 관리
+	void SkillCoolDown();									//Skill 쿨다운 관리
+	void UseSkillQ();										//SkillQ를 사용한다.
+	void UseSkillW();										//SkillW를 사용한다.
+	void UseSkillE();										//SkillE를 사용한다.
+
+	void SetHitCheck(int Left, int Right, int Top, int Bottom, bool OnOff);			//HitCheck를 세팅한다.
+	void CheckHitCheck();									//HitCheck에 플레이어가 있는지 확인
+
+	void PaintPlayerIF(HDC hdc, HDC Bithdc) const;						//Player 인터페이스 그리기
+
 
 private:
 	int XPos;
@@ -46,6 +58,7 @@ private:
 	int SkillQ;
 	int SkillW;
 	int SkillE;
+	int HitCheck[21][21];
 };
 
 void CreatePlayer(Player** player);					//Player를 만들기 위한 객체들 생성

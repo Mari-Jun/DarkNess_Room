@@ -1,8 +1,8 @@
 #include "Resource.hpp"
 #include "Player.hpp"
 
-Player::Player(int X, int Y, int H, int Q, int W, int E) : XPos(X), YPos(Y), Health(H), SkillQ(Q), SkillW(W), SkillE(E) {
-
+Player::Player(int X, int Y, int H, int Q, int W, int E, int HC) : XPos(X), YPos(Y), Health(H), SkillQ(Q), SkillW(W), SkillE(E){
+	memset(HitCheck, HC, sizeof(HitCheck));
 }
 
 //플레이어 관련
@@ -178,7 +178,86 @@ const int Player::GetSkillE() const {
 	return SkillE;
 }
 
-void Player::PaintPlayerIF(HDC hdc) const {
+void Player::UseSkill(WPARAM wParam) {
+	switch (wParam) {
+	case 'q':
+		if (GetSkillQ() == 0)
+			UseSkillQ();
+		break;
+	default:
+		break;
+	}
+}
+
+void Player::SkillCoolDown() {
+	static int Count = 0;
+
+	//0.1초(게임시간)당 1씩 증가
+	Count++;
+
+	if (Count == 10) {
+		Count = 0;
+
+		//SkillQ 쿨다운이 0보다 크면 1씩 감소
+		if (SkillQ > 0)
+			SkillQ--;
+		
+		//SkillW 쿨다운이 0보다 크면 1씩 감소
+		if (SkillW > 0)
+			SkillW--;
+
+		//SkillE 쿨다운이 0보다 크면 1씩 감소
+		if (SkillE > 0)
+			SkillE--;
+	}
+}
+
+void Player::UseSkillQ() {
+	//SkillQ 쿨다운 초기화
+	SkillQ = 20;
+
+	//효과 발동
+	Health += 10;
+	if (Health > 100)
+		Health = 100;
+}
+
+void Player::UseSkillW() {
+
+}
+
+void Player::UseSkillE() {
+
+}
+
+void Player::SetHitCheck(int Left, int Right, int Top, int Bottom, bool OnOff) {
+	for (int x = Left; x <= Right; x++)
+		for (int y = Top; y <= Bottom; y++) {
+			if (OnOff)
+				//On일경우 HitCheck의 값을 1씩 증가시킨다.
+				HitCheck[y][x]++;
+			else
+				//Off일경우 HitCheck의 값을 1씩 감소시킨다.
+				HitCheck[y][x]--;
+		}
+}
+
+void Player::CheckHitCheck() {
+	 
+	if (HitCheck[(YPos - 130) / 60][(XPos - 130) / 60] > 0 ||
+		HitCheck[(YPos - 130) / 60][(XPos - 110) / 60] > 0 ||
+		HitCheck[(YPos - 110) / 60][(XPos - 130) / 60] > 0 ||
+		HitCheck[(YPos - 110) / 60][(XPos - 110) / 60] > 0) {
+		
+		//플레이어의 (순서대로) 왼쪽위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 지점의 HitCheck가 1이상일 경우
+
+		//Health를 감소시킨다.
+		Health--;
+	}
+}
+
+
+void Player::PaintPlayerIF(HDC hdc, HDC Bithdc) const {
 
 	//기본 텍스트들 출력
 	SelectObject(hdc, PlayerIFFont1);
@@ -199,16 +278,33 @@ void Player::PaintPlayerIF(HDC hdc) const {
 
 	//기본 비트맵 틀
 	OldPBrush = (HBRUSH)SelectObject(hdc, PlayerIFBrush1);
-	Rectangle(hdc, 90, PTOPWALL + 5, 490, PBOTTOMWALL - 5);
+	//체력바 틀
+	Rectangle(hdc, 90, PTOPWALL + 5, 500, PBOTTOMWALL - 5);
+	//체력바
+	SelectObject(Bithdc, HealthBit);
+	TransparentBlt(hdc, 95, PTOPWALL + 10, Health * 4, 40, Bithdc, 0, 0, 400, 40, RGB(255, 255, 255));
+
+	//Q스킬
 	Rectangle(hdc, 550, PTOPWALL + 5, 600, PBOTTOMWALL - 5);
+	//W스킬
 	Rectangle(hdc, 660, PTOPWALL + 5, 710, PBOTTOMWALL - 5);
+	//E스킬
 	Rectangle(hdc, 770, PTOPWALL + 5, 820, PBOTTOMWALL - 5);
 
 	SelectObject(hdc, PlayerIFFont2);
 	SetTextColor(hdc, RGB(200, 200, 200));
 	SetBkMode(hdc, TRANSPARENT);
-	TextOut(hdc, 240, PTOPWALL + 15, _T("100 / 100"), 9);
-	TextOut(hdc, 560, PTOPWALL + 15, _T("20"), 2);
+
+	//체력 표시
+	wchar_t str1[10];
+	swprintf_s(str1, L"%d%d%d / 100", Health / 100, Health / 10 % 10, Health % 10);
+	TextOut(hdc, 240, PTOPWALL + 15, str1, 9);
+
+	//Q스킬 쿨다운 표시
+	wchar_t str2[3];
+	swprintf_s(str2, L"%d%d", SkillQ / 10, SkillQ % 10);
+	TextOut(hdc, 560, PTOPWALL + 15, str2, 2);
+
 	TextOut(hdc, 670, PTOPWALL + 15, _T("40"), 2);
 	TextOut(hdc, 780, PTOPWALL + 15, _T("60"), 2);
 
@@ -216,11 +312,10 @@ void Player::PaintPlayerIF(HDC hdc) const {
 }
 
 
-
 void CreatePlayer(Player** player) {
 	if (*player == NULL) {
 		//*player가 NULL일 경우 생성한다.
-		*player = new Player(640, 450, 100, 0, 0, 0);
+		*player = new Player(640, 450, 100, 0, 0, 0, 0);
 
 		PlayerIFBrush1 = CreateSolidBrush(RGB(0, 0, 0));
 
@@ -228,6 +323,8 @@ void CreatePlayer(Player** player) {
 
 		PlayerIFFont1 = CreateFontW(50, 15, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Algerian"));
 		PlayerIFFont2 = CreateFontW(30, 10, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
+
+		HealthBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 	}
 
 }

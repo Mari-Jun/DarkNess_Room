@@ -139,21 +139,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = WindowX;
 		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = WindowY;
 		break;
-	case WM_KEYDOWN:
-		InvalidateRgn(hwnd, NULL, FALSE);
-		break;
 	case WM_CHAR:
-		switch (wParam) {
-		case 'c':
-			//임시 코드
-			Page = 1;
-			KillTimer(hwnd, 10);
-			DeleteInterface(&Inter);
-			CreateStartPage(&Click);
-			PlayStartBKSound();
-			PlayLightningSound();
-			SetTimer(hwnd, 3, 10, NULL);
-			break;
+		if (Page == 10) {
+			player->UseSkill(wParam);
 		}
 		break;
 	case WM_LBUTTONUP:
@@ -211,7 +199,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				}
 			}
 		}
-		InvalidateRgn(hwnd, NULL, FALSE);
+		
+		//InvalidateRgn(hwnd, NULL, FALSE);
 		break;
 	case WM_LBUTTONDOWN:
 		Mx = LOWORD(lParam);
@@ -226,7 +215,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				HelpClickCheck(Help, My, Mx);
 			}
 		}
-		InvalidateRgn(hwnd, NULL, FALSE);
+		//InvalidateRgn(hwnd, NULL, FALSE);
 		break;
 	case WM_MOUSEMOVE:
 		Mx = LOWORD(lParam);
@@ -391,13 +380,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			}
 
 			GameTime++;
-			if (GameTime == 10) {
+			if (GameTime == 7) {
+				//게임시간 기준 0.1초
+				//0.1초마다 Loop를 돌 수 있게 0으로 재설정.
+				GameTime = 0;
+
+				//에너미 관련
 				for (LShot; LShot < LMaxShot; LShot++) {
 					SelectLShot(Lenemy);
 				}
+				LShot = ChangeLInfo(Lenemy, player);
+
+				//플레이어가 적의 공격에 맞았는지 확인한다.
+				player->CheckHitCheck();
+
+
+				//플레이어 스킬 쿨다운을 업데이트한다.
+				player->SkillCoolDown();
 			}
-
-
 			break;
 
 		}
@@ -510,7 +510,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//플레이어 관련을 Gamedc1에 그려준다.
 			player->PaintPlayer(Gamedc1);
-			player->PaintPlayerIF(Gamedc1);
+			player->PaintPlayerIF(Gamedc1, Gamedc2);
 			
 
 			//Gamedc1에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.

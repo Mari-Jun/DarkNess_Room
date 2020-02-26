@@ -30,38 +30,49 @@ const int Enemy::GetDelay() const {
 }
 
 void Enemy::SetCharging() {
-	//Charging값을 15로 지정한다.
-	Charging = 15;
+	//Charging값을 10으로 지정한다.
+	Charging = 11;
 }
 
-void Enemy::ChangeCharging() {
+bool Enemy::ChangeCharging() {
 	//Charging이 0보다 크다면 1씩 감소시킨다.
 	if (Charging > 0) {
+		
 		Charging--;
-		//만약 Charging이 0이 된다면 Delay를 0으로 만들어준다.
-		if (Charging == 0)
+
+		if (Charging == 0) {
+			//만약 Charging이 0이 된다면 Delay를 0으로 만들어준다.
 			Delay = 0;
+			//발사 시간이 끝난 상태임으로 true를 반환
+			return true;
+		}
+		return false;
 	}
+	//아직 발사시간임으로 false를 반환
+	return false;
+
 }
 
 void Enemy::SetDelay() {
-	//11~21(실제는 10~20)까지의 Delay타임 게임시간으로 1.0초~ 2.0초를 뜻함.
-	Delay = rand() % 11 + 11;
+	//11을 Delay타임 설정 게임시간으로 1.0초를 뜻함.
+	Delay = 11;
 }
 
-void Enemy::ChangeDelay() {
+bool Enemy::ChangeDelay() {
 	//Delay가 1보다 크다면 1씩 감소시킨다.
 	if (Delay > 1) {
 		Delay--;
 		//만약 Delay가 1이라면 Charging을 세팅해준다.
-		if (Delay == 1)
+		if (Delay == 1) {
 			SetCharging();
+		}
+		return true;
 	}
-		
+	else if (Delay == 1)
+		//Delay가 1이면 발사중이기 때문에
+		return true;
+	return false;
 }
-
-
-
 
 //직선포 에너미
 
@@ -82,8 +93,8 @@ const int LineEnemy::GetDirection() const {
 void LineEnemy::SetRange() {
 	if ((GetXPos() > LLEFTWALL&& GetXPos() < LRIGHTWALL) || (GetYPos() > LTOPWALL&& GetYPos() < LBOTTOMWALL)) {
 		//직선포의 발사 범위가 중간 섬에 겹칠 경우
-		//범위를 6~8으로 설정한다.
-		Range = rand() % 3 + 6;
+		//범위를 5~8으로 설정한다.
+		Range = rand() % 4 + 5;
 	}
 	else {
 		//겹치지 않는 경우
@@ -92,20 +103,56 @@ void LineEnemy::SetRange() {
 	}
 }
 
-const bool LineEnemy::HitPlayer(Player* player) const {
-	if (GetXPos() - 10 < player->GetXPos() && GetXPos() + 10 > player->GetXPos() && GetYPos() + 10 > player->GetYPos())
-		return true;
-	return false;
+void LineEnemy::SetHitCheck(Player* player, bool OnOff) {
+	//HitCheck를 설정한다.
+
+	//HitCheck를 변경할 범위를 설정한다.
+	int Left, Right, Top, Bottom;
+	if (abs(Direction) == 1) {
+		//위 아래 직선포일경우
+		Left = (GetXPos() - 150) / 60;
+		Right = (GetXPos() - 150) / 60;
+		if (Direction == 1) {
+			Top = 0;
+			Bottom = Range - 1;
+		}
+		else {
+			Top = 19 - Range + 1;
+			Bottom = 19;
+		}
+	}
+	else {
+		//왼쪽 오른쪽 직선포일경우
+		if (Direction == 2) {
+			Left = 0;
+			Right = Range - 1;
+		}
+		else {
+			Left = 19 - Range + 1;
+			Right = 19;
+		}
+		Top = (GetYPos() - 150) / 60;
+		Bottom = (GetYPos() - 150) / 60;
+	}
+
+	//player의 SetHitCheck를 불러온다.
+	player->SetHitCheck(Left, Right, Top, Bottom, OnOff);
 }
 
+
 void LineEnemy::PaintEnmey(HDC hdc) const {
-	if (this->GetCharging()) {
+
+	if (this->GetCharging() != 0) {
 		//발사 중이라면
 		OldEBrush = (HBRUSH)SelectObject(hdc, LBrush2);
 		OldEPen = (HPEN)SelectObject(hdc, LPen1);
 	}
 	else {
 		//발사 중이 아니라면
+		if(GetDelay()==0)
+			LBrush1 = CreateSolidBrush(RGB(10, 10, 10));
+		else
+			LBrush1 = CreateSolidBrush(RGB((10 - GetDelay()) * 15, 10, 10));
 		OldEBrush = (HBRUSH)SelectObject(hdc, LBrush1);
 		OldEPen = (HPEN)SelectObject(hdc, LPen1);
 	}
@@ -128,6 +175,7 @@ void LineEnemy::PaintEnmey(HDC hdc) const {
 		RoundRect(hdc, GetXPos() + 32 * Direction / 2, GetYPos() - 13, GetXPos() + 38 * Direction / 2, GetYPos() + 13, 6, 6);
 	}
 
+	DeleteObject(LBrush1);
 	SelectObject(hdc, OldEBrush);
 	SelectObject(hdc, OldEPen);
 }
@@ -135,20 +183,21 @@ void LineEnemy::PaintEnmey(HDC hdc) const {
 void LineEnemy::PaintShot(HDC hdc) const{
 
 	if (this->GetDelay() != 0) {
-		//발사 딜레이 0이 아닐때 
+		//발사 시작 시간이 0이 아닐때 
 		if (this->GetCharging() != 0) {
 			//발사 중일때 
 			//즉 Delay가 1이고 Charging도 1이상일때
 			OldEBrush = (HBRUSH)SelectObject(hdc, LBrush2);
-			OldEPen = (HPEN)SelectObject(hdc, LPen1);
+			OldEPen = (HPEN)SelectObject(hdc, LPen2);
 		}
 		else {
 			//발사 대기중일때 
 			//즉 Delay가 1이상이고 Charging은 0일때
 			SetBkMode(hdc, TRANSPARENT);
 			OldEBrush = (HBRUSH)SelectObject(hdc, LBrush3);
-			OldEPen = (HPEN)SelectObject(hdc, LPen1);
+			OldEPen = (HPEN)SelectObject(hdc, LPen2);
 		}
+
 		if (abs(Direction) == 1) {
 			Rectangle(hdc, GetXPos() - 30, GetYPos() + 45 * Direction, GetXPos() + 30, GetYPos() + (45 + Range * 60) * Direction);
 		}
@@ -162,11 +211,10 @@ void LineEnemy::PaintShot(HDC hdc) const{
 
 void CreateLEnemy(LineEnemy** Lenemy) {
 
-	LBrush1 = CreateSolidBrush(RGB(10, 10, 10));
-	LBrush2 = CreateSolidBrush(RGB(150, 0, 0));
-	LBrush3 = CreateHatchBrush(HS_FDIAGONAL, RGB(150, 0, 0));
+	LBrush2 = CreateSolidBrush(RGB(152, 10, 10));
+	LBrush3 = CreateHatchBrush(HS_FDIAGONAL, RGB(100, 0, 0));
 	LPen1 = CreatePen(PS_SOLID, 1, RGB(50, 0, 0));
-	LPen2 = CreatePen(PS_SOLID, 1, RGB(50, 0, 0));
+	LPen2 = CreatePen(PS_SOLID, 1, RGB(150, 0, 0));
 	
 	for (int i = 0; i < 80; i++) {
 		if (i >= 0 && i < 20) {
@@ -224,6 +272,40 @@ void SelectLShot(LineEnemy** Lenemy) {
 	}
 }
 
+int ChangeLInfo(LineEnemy** Lenemy, Player* player) {
+	//Lenemy들을 검사해서 Delay값이 0이 아닌 녀석들 한해서 실행시킨다.
+
+	int Count = 0;
+
+	for (int i = 0; i < 80; i++) {
+		if (Lenemy[i]->ChangeDelay()) {
+			//ChangeDelay함수가 정상적으로 실행되었을 경우에만 실행한다.
+
+			//발사 대기중이거나 발사중임으로 Count를 1증가 시킨다.
+			Count++;
+
+			if (Lenemy[i]->GetCharging() == 11) {
+				//방금 충전이 됬을 경우
+				//SetHitCheck를 호출한다.
+				Lenemy[i]->SetHitCheck(player, true);
+			}
+
+			if (Lenemy[i]->ChangeCharging()) {
+				//ChangeCharging()이 true(발사 종료)를 반환했을 경우에만 실행한다.
+
+				//발사종료임으로 Count를 1감소 시킨다.
+				Count--;
+
+				//발사가 종료됬음으로
+				//SetHitCheck를 호출한다.
+				Lenemy[i]->SetHitCheck(player, false);
+			}
+		}
+	}
+	//Count값 (현재 실행되고 있는 LEnemy의 수)을 반환하여 LShot에게 적용시켜준다. 
+	return Count;
+}
+
 
 
 
@@ -242,8 +324,8 @@ void WideEnemy::SetDirection() {
 
 }
 
-const bool WideEnemy::HitPlayer(Player* player) const {
-	return false;
+void WideEnemy::SetHitCheck(Player* player, bool OnOff) {
+
 }
 
 void WideEnemy::PaintEnmey(HDC hdc) const {
@@ -273,8 +355,8 @@ const int BombEnemy::GetDYPos() const {
 	return DYPos;
 }
 
-const bool BombEnemy::HitPlayer(Player* player) const {
-	return false;
+void BombEnemy::SetHitCheck(Player* player, bool OnOff) {
+
 }
 
 void BombEnemy::SetDropPos() {
@@ -307,8 +389,8 @@ void RectEnemy::SetCount() {
 
 }
 
-const bool RectEnemy::HitPlayer(Player* player) const {
-	return false;
+void RectEnemy::SetHitCheck(Player* player, bool OnOff) {
+
 }
 
 void RectEnemy::PaintEnmey(HDC hdc) const {
