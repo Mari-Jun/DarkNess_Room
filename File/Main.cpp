@@ -86,9 +86,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static HelpButton* Help = NULL;
 	static Camera* camera;
 	static Interface* Inter;
-	static LineEnemy* Lenemy[80];
-	//static LineEnemy* LEnemy;
-	//static WideEnemy* WEnemy;
+	static LineEnemy* LEnemy[80];
+	static WideEnemy* WEnemy;
 	//static BombEnemy* BEnemy;
 	//static RectEnemy* REnemy;
 
@@ -346,8 +345,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					CreateCamera(&camera);
 
 					//적 생성
-					CreateLEnemy(Lenemy);
-					
+					CreateLEnemy(LEnemy);
+					CreateWEnemy(&WEnemy);
 				}
 			}
 
@@ -386,14 +385,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				GameTime = 0;
 
 				//에너미 관련
+
+				//LineEnmey
 				for (LShot; LShot < LMaxShot; LShot++) {
-					SelectLShot(Lenemy);
+					SelectLShot(LEnemy);
 				}
-				LShot = ChangeLInfo(Lenemy, player);
+				LShot = ChangeLInfo(LEnemy, player);
+
+				//WideEnemy
+
 
 				//플레이어가 적의 공격에 맞았는지 확인한다.
 				player->CheckHitCheck();
-
 
 				//플레이어 스킬 쿨다운을 업데이트한다.
 				player->SkillCoolDown();
@@ -499,13 +502,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			Inter->PaintBackGround(Gamedc1, Gamedc2);
 
 			//에너미들을 Gamedc1에 그려준다.
-			for(int L=0; L<80; L++)
-				Lenemy[L]->PaintEnmey(Gamedc1);
+			for (int L = 0; L < 80; L++)
+				LEnemy[L]->PaintEnmey(Gamedc1, Gamedc2);
 
 
 			//발사체들을 Gamedc1에 그려준다.
 			for (int L = 0; L < 80; L++)
-				Lenemy[L]->PaintShot(Gamedc1);
+				LEnemy[L]->PaintShot(Gamedc1);
 
 
 			//플레이어 관련을 Gamedc1에 그려준다.

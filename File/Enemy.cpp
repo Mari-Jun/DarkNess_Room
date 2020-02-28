@@ -53,9 +53,9 @@ bool Enemy::ChangeCharging() {
 
 }
 
-void Enemy::SetDelay() {
-	//11을 Delay타임 설정 게임시간으로 1.0초를 뜻함.
-	Delay = 11;
+void Enemy::SetDelay(int D) {
+	//적의 종류마다 Delay가 달라야함으로 변수 D를 입력시킨다.
+	Delay = D;
 }
 
 bool Enemy::ChangeDelay() {
@@ -140,9 +140,25 @@ void LineEnemy::SetHitCheck(Player* player, bool OnOff) {
 }
 
 
-void LineEnemy::PaintEnmey(HDC hdc) const {
+void LineEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 
-	if (this->GetCharging() != 0) {
+	if (abs(Direction) == 1) {
+		if(Direction==1)
+			SelectObject(Bithdc, LBitMap[0]);
+		else
+			SelectObject(Bithdc, LBitMap[3]);
+		TransparentBlt(hdc, GetXPos() - 30, GetYPos() -40, 60, 80, Bithdc, 0, 0, 60, 80, RGB(255, 255, 255));
+	}
+
+	if (abs(Direction == 2)) {
+		if (Direction == 2)
+			SelectObject(Bithdc, LBitMap[1]);
+		else
+			SelectObject(Bithdc, LBitMap[2]);
+		TransparentBlt(hdc, GetXPos() - 40, GetYPos() - 30, 80, 60, Bithdc, 0, 0, 80, 60, RGB(255, 255, 255));
+	}
+
+	/*if (this->GetCharging() != 0) {
 		//발사 중이라면
 		OldEBrush = (HBRUSH)SelectObject(hdc, LBrush2);
 		OldEPen = (HPEN)SelectObject(hdc, LPen1);
@@ -155,9 +171,9 @@ void LineEnemy::PaintEnmey(HDC hdc) const {
 			LBrush1 = CreateSolidBrush(RGB((10 - GetDelay()) * 15, 10, 10));
 		OldEBrush = (HBRUSH)SelectObject(hdc, LBrush1);
 		OldEPen = (HPEN)SelectObject(hdc, LPen1);
-	}
+	}*/
 
-	if (abs(Direction) == 1) {
+/*	if (abs(Direction) == 1) {
 		//위쪽 포일경우 , //아래쪽 포일경우
 		POINT Pos[4] = { {GetXPos() - 20,GetYPos() - 20 * Direction},{GetXPos() + 20,GetYPos() - 20 * Direction},{GetXPos() + 10,GetYPos() + 35 * Direction},{GetXPos() - 10,GetYPos() + 35 * Direction} };
 
@@ -165,8 +181,8 @@ void LineEnemy::PaintEnmey(HDC hdc) const {
 		Polygon(hdc, Pos, 4);
 		RoundRect(hdc, GetXPos() - 13, GetYPos() + 32 * Direction, GetXPos() + 13, GetYPos() + 38 * Direction, 6, 6);
 	
-	}
-	else {
+	}*/
+	/*else {
 		//왼쪽 포일경우, //오른쪽 포일경우
 		POINT Pos[4] = { {GetXPos() - 20 * Direction / 2,GetYPos() - 20},{GetXPos() + 35 * Direction / 2,GetYPos() - 10},{GetXPos() + 35 * Direction / 2,GetYPos() + 10},{GetXPos() - 20 * Direction / 2,GetYPos() + 20} };
 
@@ -174,10 +190,10 @@ void LineEnemy::PaintEnmey(HDC hdc) const {
 		Polygon(hdc, Pos, 4);
 		RoundRect(hdc, GetXPos() + 32 * Direction / 2, GetYPos() - 13, GetXPos() + 38 * Direction / 2, GetYPos() + 13, 6, 6);
 	}
-
-	DeleteObject(LBrush1);
+	*/
+/*	DeleteObject(LBrush1);
 	SelectObject(hdc, OldEBrush);
-	SelectObject(hdc, OldEPen);
+	SelectObject(hdc, OldEPen);*/
 }
 
 void LineEnemy::PaintShot(HDC hdc) const{
@@ -210,6 +226,12 @@ void LineEnemy::PaintShot(HDC hdc) const{
 }
 
 void CreateLEnemy(LineEnemy** Lenemy) {
+
+	for (int i = 0; i < 4; i++) {
+		wchar_t str[100];
+		swprintf_s(str, L".\\BitMap\\LineEnemy%d.bmp", i + 1);
+		LBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	}
 
 	LBrush2 = CreateSolidBrush(RGB(152, 10, 10));
 	LBrush3 = CreateHatchBrush(HS_FDIAGONAL, RGB(100, 0, 0));
@@ -262,8 +284,8 @@ void SelectLShot(LineEnemy** Lenemy) {
 			//Delay가 0일경우만 실행한다.
 			//0이 아니면 이미 선택된 녀석이라 다시 선택하면 안되기 때문에
 
-			//Delay를 지정한다.
-			Lenemy[Num]->SetDelay();
+			//Delay를 11으로 지정한다.
+			Lenemy[Num]->SetDelay(11);
 			//Range를 지정한다.
 			Lenemy[Num]->SetRange();
 
@@ -311,7 +333,7 @@ int ChangeLInfo(LineEnemy** Lenemy, Player* player) {
 
 //광역포 에너미
 
-WideEnemy::WideEnemy(int X, int Y, bool C, int D, int Di) : Enemy(X, Y, C, D), Direction(Di) {
+WideEnemy::WideEnemy(int X, int Y, int C, int D, int Di) : Enemy(X, Y, C, D), Direction(Di) {
 
 }
 
@@ -321,22 +343,63 @@ const int WideEnemy::GetDirection() const {
 }
 
 void WideEnemy::SetDirection() {
-
+	//Direction값을 설정한다. 1:왼쪽위, 2: 오른쪽 위, 3: 왼쪽아래, 4: 오른쪽아래
+	Direction = rand() % 4 + 1;
 }
 
 void WideEnemy::SetHitCheck(Player* player, bool OnOff) {
+	//HitCheck를 설정한다.
 
+	//HitCheck를 변경할 범위를 설정한다.
+	int Left, Right, Top, Bottom;
+
+	//각각 설정한다.
+	Left = 10 * (1 - Direction % 2);
+	Right = 10 * (1 - Direction % 2) +9;
+	Top = 10 * (Direction / 3);
+	Bottom = 10 * (Direction / 3) + 9;
+
+	//player의 SetHitCheck를 불러온다.
+	player->SetHitCheck(Left, Right, Top, Bottom, OnOff);
 }
 
-void WideEnemy::PaintEnmey(HDC hdc) const {
-
+void WideEnemy::PaintEnmey(HDC hdc, HDC BIthdc) const {
+	
 }
 
 void WideEnemy::PaintShot(HDC hdc) const {
 
 }
 
+void CreateWEnemy(WideEnemy** Wenemy) {
+	if (*Wenemy == NULL) {
+		//*Wenemy가 NULL일때 작동
+		//WideEnemy는 1개이다.
+		*Wenemy = new WideEnemy((LLEFTWALL + LRIGHTWALL) / 2, (LTOPWALL + LBOTTOMWALL / 2), 0, 0, 0);
 
+		//WideEnemyBrush , Pen (으)로 적의 색을 표현함
+		WEBrush = CreateSolidBrush(RGB(250, 237, 125));
+		WEPen = CreatePen(PS_SOLID, 1, RGB(50, 50, 50));
+
+		//WideEnemyShotBrush, Pen (으)로 적의 포 색을 표현함.
+		WSBrush1 = CreateSolidBrush(RGB(250, 237, 125));
+		WSBrush2 = CreateHatchBrush(HS_FDIAGONAL, RGB(250, 237, 125));
+		WSPen = CreatePen(PS_SOLID, 1, RGB(196, 183, 59));
+	}
+}
+
+void DeleteWEnemy(WideEnemy** Wenemy) {
+	if (*Wenemy != NULL) {
+		delete* Wenemy;
+		*Wenemy = NULL;
+
+		DeleteObject(WEBrush);
+		DeleteObject(WEPen);
+		DeleteObject(WSBrush1);
+		DeleteObject(WSBrush2);
+		DeleteObject(WSPen);
+	}
+}
 
 
 //폭탄 에너미
@@ -363,7 +426,7 @@ void BombEnemy::SetDropPos() {
 
 }
 
-void BombEnemy::PaintEnmey(HDC hdc) const {
+void BombEnemy::PaintEnmey(HDC hdc, HDC BIthdc) const {
 
 }
 
@@ -393,7 +456,7 @@ void RectEnemy::SetHitCheck(Player* player, bool OnOff) {
 
 }
 
-void RectEnemy::PaintEnmey(HDC hdc) const {
+void RectEnemy::PaintEnmey(HDC hdc, HDC BIthdc) const {
 
 }
 
@@ -403,9 +466,7 @@ void RectEnemy::PaintShot(HDC hdc) const {
 
 
 
-void CreateWEnemy(WideEnemy** Wenemy) {
 
-}
 
 void CreateBEnemy(BombEnemy** Benemy) {
 

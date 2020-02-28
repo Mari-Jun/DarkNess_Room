@@ -28,3 +28,12 @@ Day11
 직선포 에너미 구현 완료 (임시)
 체력 구현 완료 (임시)
 Skill Q 구현 진행중
+
+
+Day12
+휴식
+
+
+Day13
+WideEnemy 구현중
+LineEnemy 이미지 교체 및 업데이트

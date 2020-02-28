@@ -6,10 +6,7 @@ static HBRUSH OldBackGroundBrush;
 static HPEN BackGroundPen1;
 static HPEN OldBackGroundPen;
 
-static HBITMAP BackGroundBit1;
-static HBITMAP BackGroundBit2;
-static HBITMAP BackGroundBit3;
-static HBITMAP BackGroundBit4;
+static HBITMAP BackGroundBit[4];
 
 class Interface {
 public:
