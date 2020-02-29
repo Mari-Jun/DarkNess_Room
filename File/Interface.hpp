@@ -19,6 +19,7 @@ public:
 	void ChangePercent();				//Percent º¯È¯
 
 	void PaintBackGround(HDC hdc, HDC Bithdc);
+	void PaintBackGroundLine(HDC hdc);
 private:
 	int Level;
 	int Percent;

@@ -25,7 +25,7 @@ void Interface::ChangePercent() {
 
 void Interface::PaintBackGround(HDC hdc, HDC Bithdc) {
 
-	//겉 테두리 그리기 (전체맵)
+	//겉 테두리 그리기 (전체맵)a
 	SelectObject(Bithdc, BackGroundBit[0]);
 	//위쪽
 	BitBlt(hdc, 0, 0, ALLMAPX, CTOPWALL, Bithdc, 0, 0, SRCCOPY);
@@ -63,10 +63,12 @@ void Interface::PaintBackGround(HDC hdc, HDC Bithdc) {
 	//플레이어 인터페이스 그리기
 	SelectObject(Bithdc, BackGroundBit[3]);
 	BitBlt(hdc, PLEFTWALL, PTOPWALL, PRIGHTWALL - PLEFTWALL, PBOTTOMWALL - PTOPWALL, Bithdc, 0, 0, SRCCOPY);
+}
 
+void Interface::PaintBackGroundLine(HDC hdc) {
 
 	OldBackGroundPen = (HPEN)SelectObject(hdc, BackGroundPen1);
-
+	
 	//선 그리기
 	for (int x = LEFTWALL + 60; x < RIGHTWALL; x += 60) {
 		MoveToEx(hdc, x, TOPWALL, NULL);

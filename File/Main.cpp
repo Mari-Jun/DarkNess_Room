@@ -63,8 +63,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//StartPage HDC
 	static HDC Startdc1, Startdc2;
 
-	//GamePlay HDC 1: 기본, 2: 비트맵
-	static HDC Gamedc1, Gamedc2;
+	//GamePlay HDC 1: 기본, 2: 비트맵 3: 블렌딩
+	static HDC Gamedc1, Gamedc2, Gamedc3;
 
 	//HelpPage HDC
 	static HDC Helpdc1;
@@ -86,9 +86,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static HelpButton* Help = NULL;
 	static Camera* camera;
 	static Interface* Inter;
-	static LineEnemy* LEnemy[80];
+	static LineEnemy* LEnemy[LENEMYMAX];
 	static WideEnemy* WEnemy;
-	//static BombEnemy* BEnemy;
+	static BombEnemy* BEnemy[BENEMYMAX];
 	//static RectEnemy* REnemy;
 
 	//마우스 좌표
@@ -113,10 +113,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static int GameTime = 0;
 
 	//현재 에너미별 발사 된 수
-	static int LShot = 0, WShot = 0;
+	static int LShot = 0, BShot = 0;
 
 	//최대 에너미별 발사 수
-	static int LMaxShot = 0, WMaxShot = 0;
+	static int LMaxShot = 0, BMaxShot = 0;
 
 
 	switch (iMsg)
@@ -347,6 +347,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//적 생성
 					CreateLEnemy(LEnemy);
 					CreateWEnemy(&WEnemy);
+					CreateBEnemy(BEnemy);
 				}
 			}
 
@@ -375,6 +376,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			case 1:
 				//직선포 최대 20개
 				LMaxShot = 20;
+				BMaxShot = 1;
 				break;
 			}
 
@@ -393,7 +395,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				LShot = ChangeLInfo(LEnemy, player);
 
 				//WideEnemy
+				ChangeWInfo(WEnemy, player);
 
+				//BombEnemy;
+				for (BShot; BShot < BMaxShot; BShot++) {
+					SelectBShot(BEnemy);
+				}
+				BShot = ChangeBInfo(BEnemy, player);
 
 				//플레이어가 적의 공격에 맞았는지 확인한다.
 				player->CheckHitCheck();
@@ -493,6 +501,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			//화면 인터페이스 구현을 위한 Gamedc1 선언
 			Gamedc1 = CreateCompatibleDC(hdc);
 			Gamedc2 = CreateCompatibleDC(hdc);		
+			Gamedc3 = CreateCompatibleDC(hdc);
 
 			GamePlayBit1 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
 
@@ -504,16 +513,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			//에너미들을 Gamedc1에 그려준다.
 			for (int L = 0; L < 80; L++)
 				LEnemy[L]->PaintEnmey(Gamedc1, Gamedc2);
+			WEnemy->PaintEnmey(Gamedc1, Gamedc2);
 
 
 			//발사체들을 Gamedc1에 그려준다.
-			for (int L = 0; L < 80; L++)
-				LEnemy[L]->PaintShot(Gamedc1);
+			for (int L = 0; L < LENEMYMAX; L++)
+				LEnemy[L]->PaintShot(Gamedc1, Gamedc2);
+			WEnemy->PaintShot(Gamedc1, Gamedc2);
+			for (int B = 0; B < BENEMYMAX; B++)
+				BEnemy[B]->PaintShot(Gamedc1, Gamedc2);
 
 
 			//플레이어 관련을 Gamedc1에 그려준다.
 			player->PaintPlayer(Gamedc1);
 			player->PaintPlayerIF(Gamedc1, Gamedc2);
+
+			//GameMap 선들을 그려준다.
+			Inter->PaintBackGroundLine(Gamedc1);
 			
 
 			//Gamedc1에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.

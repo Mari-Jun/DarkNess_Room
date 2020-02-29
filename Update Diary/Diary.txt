@@ -37,3 +37,8 @@ Day12
 Day13
 WideEnemy 구현중
 LineEnemy 이미지 교체 및 업데이트
+
+
+Day14
+WideEnemy 구현중
+BombEnemy 구현중

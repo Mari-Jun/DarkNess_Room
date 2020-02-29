@@ -51,3 +51,7 @@ static const int PLEFTWALL = 30;
 static const int PRIGHTWALL = 1250;
 static const int PTOPWALL = 1440;
 static const int PBOTTOMWALL = 1500;
+
+//에너미 최대 수
+static const int LENEMYMAX = 80;
+static const int BENEMYMAX = 4;
