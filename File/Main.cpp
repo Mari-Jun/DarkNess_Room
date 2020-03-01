@@ -69,6 +69,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//HelpPage HDC
 	static HDC Helpdc1;
 
+	//PlayerDC
+	static HDC Playerdc;
+
 	PAINTSTRUCT ps;
 
 	//기본 더블버퍼링을 위한 비트맵
@@ -78,7 +81,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static HBITMAP StartPageBit1, OldStartPageBit1, StartPageBit2, OldStartPageBit2;
 
 	//GamePlay페이지를 위한 비트맵
-	static HBITMAP GamePlayBit1, OldGamePlayBit1, GamePlayBit2;
+	static HBITMAP GamePlayBit1, OldGamePlayBit1, GamePlayBit2, OldGamePlayBit2 ,GamePlayBit3, OldGamePlayBit3;
 
 	//클래스 객체들
 	static Player* player;
@@ -90,6 +93,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static WideEnemy* WEnemy;
 	static BombEnemy* BEnemy[BENEMYMAX];
 	//static RectEnemy* REnemy;
+
+	//플레이어 부분만 업데이트 하기 위한 RECT
+	RECT PlayerRect;
 
 	//마우스 좌표
 	int Mx, My;
@@ -198,8 +204,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				}
 			}
 		}
-		
-		//InvalidateRgn(hwnd, NULL, FALSE);
 		break;
 	case WM_LBUTTONDOWN:
 		Mx = LOWORD(lParam);
@@ -214,7 +218,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				HelpClickCheck(Help, My, Mx);
 			}
 		}
-		//InvalidateRgn(hwnd, NULL, FALSE);
 		break;
 	case WM_MOUSEMOVE:
 		Mx = LOWORD(lParam);
@@ -251,6 +254,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 				StartPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\StartBackGround.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 			}
+			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		case 2:
 			//StartPage화면 페이드 시작
@@ -274,6 +278,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					SetTimer(hwnd, 3, 10, NULL);
 				}
 			}
+			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		case 3:
 			if (LightCount == 0) 
@@ -291,6 +296,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			if (LightCount == 450) {
 				LightCount = 0;
 			}
+			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		case 4:
 			if (Page == 1) {
@@ -359,29 +365,41 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//GamePageLoading타이머 제거
 					KillTimer(hwnd, 4);
 					//게임 Timer 생성
-					SetTimer(hwnd, 10, 10, NULL);
+					SetTimer(hwnd, 9, 10, NULL);
+					SetTimer(hwnd, 10, 70, NULL);
 				}
 			}
+			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
-		case 10:
+		case 9:
 			//Start버튼을 눌렀을때 작동한다.
+		
 
 			//플레이어 이동 함수 호출
 			player->MoveBasic();
 			//카메라 이동 함수 호출
 			camera->CameraMove(player);
+			
+			//PlayerRect = { player->GetXPos() - 10,player->GetYPos() - 10,player->GetXPos() + 10,player->GetYPos() + 10 };
+
+			InvalidateRgn(hwnd, NULL, FALSE);
+			//InvalidateRect(hwnd, &PlayerRect, TRUE);
+			//UpdateWindow(hwnd);
+			break;
+		case 10:
+			//Start버튼을 눌렀을때 작동한다.
 
 			//레벨에 따른 세팅 구현할 차례입니당!
 			switch (Inter->GetLevel()) {
 			case 1:
 				//직선포 최대 20개
-				LMaxShot = 20;
-				BMaxShot = 1;
+				LMaxShot = 80;
+				BMaxShot = 4;
 				break;
 			}
 
 			GameTime++;
-			if (GameTime == 7) {
+			if (GameTime == 1) {
 				//게임시간 기준 0.1초
 				//0.1초마다 Loop를 돌 수 있게 0으로 재설정.
 				GameTime = 0;
@@ -409,11 +427,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//플레이어 스킬 쿨다운을 업데이트한다.
 				player->SkillCoolDown();
 			}
+			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
-
 		}
 		FMOD_System_Update(M_System);
-		InvalidateRgn(hwnd, NULL, FALSE);
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
@@ -504,8 +521,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			Gamedc3 = CreateCompatibleDC(hdc);
 
 			GamePlayBit1 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
+			GamePlayBit3 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
 
+		
+		
+			OldGamePlayBit3 = (HBITMAP)SelectObject(Gamedc3, GamePlayBit3);
 			OldGamePlayBit1 = (HBITMAP)SelectObject(Gamedc1, GamePlayBit1);
+			
 	
 			//Gamedc1에 GameMap을 그려준다.
 			Inter->PaintBackGround(Gamedc1, Gamedc2);
@@ -518,19 +540,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//발사체들을 Gamedc1에 그려준다.
 			for (int L = 0; L < LENEMYMAX; L++)
-				LEnemy[L]->PaintShot(Gamedc1, Gamedc2);
-			WEnemy->PaintShot(Gamedc1, Gamedc2);
+				LEnemy[L]->PaintShot(&Gamedc1, &Gamedc2, &Gamedc3);
+			WEnemy->PaintShot(&Gamedc1, &Gamedc2, &Gamedc3);
 			for (int B = 0; B < BENEMYMAX; B++)
-				BEnemy[B]->PaintShot(Gamedc1, Gamedc2);
+				BEnemy[B]->PaintShot(&Gamedc1, &Gamedc2, &Gamedc3);
 
 
 			//플레이어 관련을 Gamedc1에 그려준다.
 			player->PaintPlayer(Gamedc1);
 			player->PaintPlayerIF(Gamedc1, Gamedc2);
 
+
 			//GameMap 선들을 그려준다.
 			Inter->PaintBackGroundLine(Gamedc1);
-			
+		
+			//사용이 끝난 객체들 삭제
+			DeleteObject(SelectObject(Gamedc3, OldGamePlayBit3));
+			DeleteDC(Gamedc2);
+			DeleteDC(Gamedc3);
 
 			//Gamedc1에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.
 
@@ -577,8 +604,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//삭제
 			DeleteObject(SelectObject(Gamedc1, OldGamePlayBit1));
-			DeleteObject(Gamedc1);
-			DeleteObject(Gamedc2);
+			DeleteDC(Gamedc1);
+		
 		}
 		
 		//mem1dc를 hdc로 복사한다.
@@ -586,7 +613,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	
 		SelectObject(mem1dc, OldBitmap);
 		DeleteObject(Bitmap);
-		DeleteObject(mem1dc);
+		DeleteDC(mem1dc);
 		EndPaint(hwnd, &ps);
 		break;
 	

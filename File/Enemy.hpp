@@ -21,10 +21,10 @@ public:
 	void SetDelay(int D);											//Delay값을 지정한다.
 	bool ChangeDelay();												//Delay값을 1씩 감소시킨다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff) = 0;		//HitCheck를 설정한다.
+	virtual void SetHitCheck(Player* player, bool OnOff) const = 0;		//HitCheck를 설정한다.
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const = 0;
-	virtual void PaintShot(HDC hdc, HDC Bithdc) const = 0;
+	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2S) const = 0;
 	
 private:
 	int XPos;														//적의 X축 위치
@@ -46,6 +46,7 @@ static HPEN LPen2;
 static HPEN LPen3;
 
 static HBITMAP LBitMap[4];
+static HBITMAP LSBitMap[11];
 
 class LineEnemy : public Enemy {
 public:
@@ -56,10 +57,10 @@ public:
 
 	void SetRange();											//Range값을 정한다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff);
+	virtual void SetHitCheck(Player* player, bool OnOff) const;
 		
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//직선포적 적을 그린다.
-	virtual void PaintShot(HDC hdc, HDC Bithdc) const;						//직선포적 포를 그린다.
+	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;						//직선포적 포를 그린다.
 private:
 	int Range;													//피격 범위
 	int Direction;												//포 방향
@@ -91,10 +92,10 @@ public:
 
 	void SetDirection();										//Direction값을 정한다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff);
+	virtual void SetHitCheck(Player* player, bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//광역포적 적을 그린다.
-	virtual void PaintShot(HDC hdc, HDC Bithdc) const;						//광역포적 포를 그린다.
+	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;						//광역포적 포를 그린다.
 private:
 	int Direction;												//광역 방향
 };
@@ -121,10 +122,10 @@ public:
 
 	virtual void SetDropPos();									//DXPos값과 DYPos값을 정한다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff);
+	virtual void SetHitCheck(Player* player, bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//폭탄적 적을 그린다.
-	virtual void PaintShot(HDC hdc, HDC Bithdc) const;			//폭탄적 폭탄을 그린다.
+	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;			//폭탄적 폭탄을 그린다.
 private:
 	int DXPos;													//떨어지는 X축 위치
 	int DYPos;													//떨어지는 Y축 위치
@@ -144,10 +145,10 @@ public:
 
 	void SetCount();												//Count값을 정한다.
 
-virtual void SetHitCheck(Player* player, bool OnOff);
+virtual void SetHitCheck(Player* player, bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;				//범위포적 적을 그린다.
-	virtual void PaintShot(HDC hdc, HDC Bithdc) const;							//범위포적 포를 그린다.
+	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;							//범위포적 포를 그린다.
 private:
 	int Count;														//떨어지는 포의 개수
 };
