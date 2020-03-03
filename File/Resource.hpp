@@ -6,6 +6,7 @@
 #include <ctime>
 #include <iostream>
 #include <mmsystem.h>
+#include <wingdi.h>
 #include <fmod.h>
 
 #pragma comment(lib,"winmm")

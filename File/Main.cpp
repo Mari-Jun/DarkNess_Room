@@ -78,7 +78,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static HBITMAP Bitmap, OldBitmap;
 
 	//StartPage를 위한 비트맵 1 : 배경 이미지, 2 : 텍스트
-	static HBITMAP StartPageBit1, OldStartPageBit1, StartPageBit2, OldStartPageBit2;
+	static HBITMAP StartPageBit1, StartPageBit2;
 
 	//GamePlay페이지를 위한 비트맵
 	static HBITMAP GamePlayBit1, OldGamePlayBit1, GamePlayBit2, OldGamePlayBit2 ,GamePlayBit3, OldGamePlayBit3;
@@ -93,9 +93,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static WideEnemy* WEnemy;
 	static BombEnemy* BEnemy[BENEMYMAX];
 	//static RectEnemy* REnemy;
-
-	//플레이어 부분만 업데이트 하기 위한 RECT
-	RECT PlayerRect;
 
 	//마우스 좌표
 	int Mx, My;
@@ -132,6 +129,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		SoundInit();
 		//로딩 페이지에 필요한 객체들 만들기
 		CreateLoadingPage();
+
+		//기본 HDC및 BITAMP 생성
+		hdc = GetDC(hwnd);
+		mem1dc = CreateCompatibleDC(hdc);
+		ReleaseDC(hwnd, hdc);
+
 		//Loading 타이머 세팅
 		SetTimer(hwnd, 1, 10, NULL);
 		//랜덤을 위한
@@ -252,7 +255,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				Page = 1;
 				CreateStartPage(&Click);
 
-				StartPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\StartBackGround.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+				//StartPage에서 필요한 HDC, BITMAP들 생성
+				hdc = GetDC(hwnd);
+
+				//StartPageBit1 = 비트맵
+				StartPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\StartBackGround.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+				//StartPageBit2 = 그 이외의 것들
+				StartPageBit2 = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
+
+				//Startdc1 = 비트맵
+				Startdc1 = CreateCompatibleDC(hdc);
+				//Startdc2 = 글씨
+				Startdc2 = CreateCompatibleDC(hdc);
+
+				//HelpPage에서 필요한 HDC, BITMAP들 생성
+				Helpdc1 = CreateCompatibleDC(hdc);
+
+				SelectObject(Startdc1, StartPageBit1);
+				SelectObject(Startdc2, StartPageBit2);
+
+				//텍스트의 배경을 투명한 색으로 지정함.
+				SetBkMode(Startdc2, TRANSPARENT);
+
+				ReleaseDC(hwnd, hdc);
 			}
 			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
@@ -327,9 +353,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//모든 사운드 제거
 					StartPageSoundStop();
 
-
 					//LoadingPage생성
 					CreateLoadingPage();
+
+					//StartPage에서 사용된 HDC, BITMAP들 삭제
+					DeleteObject(StartPageBit1);
+					DeleteObject(StartPageBit2);
+					DeleteDC(Startdc1);
+					DeleteDC(Startdc2);
+					DeleteDC(Helpdc1);
 				}
 				if(LoadingCount<100)
 					LoadingCount++;
@@ -354,6 +386,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					CreateLEnemy(LEnemy);
 					CreateWEnemy(&WEnemy);
 					CreateBEnemy(BEnemy);
+
+					//GamePage를 위한 HDC, BITMAP들 생성
+					
+					hdc = GetDC(hwnd);
+
+					Gamedc1 = CreateCompatibleDC(hdc);
+					Gamedc2 = CreateCompatibleDC(hdc);
+					Gamedc3 = CreateCompatibleDC(hdc);
+
+					//뒤에 배경 비트맵이 있기 때문에 가능하다.
+					//없다면 PAINT에 넣어줘야 한다.
+					GamePlayBit1 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
+					GamePlayBit2 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
+					GamePlayBit3 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
+
+					SelectObject(Gamedc1, GamePlayBit1);
+					SelectObject(Gamedc2, GamePlayBit2);
+					SelectObject(Gamedc3, GamePlayBit3);
+
+					ReleaseDC(hwnd, hdc);
 				}
 			}
 
@@ -365,41 +417,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//GamePageLoading타이머 제거
 					KillTimer(hwnd, 4);
 					//게임 Timer 생성
-					SetTimer(hwnd, 9, 10, NULL);
-					SetTimer(hwnd, 10, 70, NULL);
+					SetTimer(hwnd, 10, 10, NULL);
 				}
 			}
 			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
-		case 9:
+		case 10:
 			//Start버튼을 눌렀을때 작동한다.
-		
 
 			//플레이어 이동 함수 호출
 			player->MoveBasic();
 			//카메라 이동 함수 호출
-			camera->CameraMove(player);
-			
-			//PlayerRect = { player->GetXPos() - 10,player->GetYPos() - 10,player->GetXPos() + 10,player->GetYPos() + 10 };
-
-			InvalidateRgn(hwnd, NULL, FALSE);
-			//InvalidateRect(hwnd, &PlayerRect, TRUE);
-			//UpdateWindow(hwnd);
-			break;
-		case 10:
-			//Start버튼을 눌렀을때 작동한다.
+			camera->CameraMove(player);		
 
 			//레벨에 따른 세팅 구현할 차례입니당!
 			switch (Inter->GetLevel()) {
 			case 1:
 				//직선포 최대 20개
-				LMaxShot = 80;
-				BMaxShot = 4;
+				LMaxShot = 20;
+				BMaxShot = 0;
 				break;
 			}
 
 			GameTime++;
-			if (GameTime == 1) {
+			if (GameTime == 7) {
 				//게임시간 기준 0.1초
 				//0.1초마다 Loop를 돌 수 있게 0으로 재설정.
 				GameTime = 0;
@@ -430,15 +471,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		}
+		//InvalidateRgn(hwnd, NULL, FALSE);
 		FMOD_System_Update(M_System);
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
-		mem1dc = CreateCompatibleDC(hdc);
 		Bitmap = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
-		
 		OldBitmap = (HBITMAP)SelectObject(mem1dc, Bitmap);
-
 
 		//mem1dc에 더블버퍼링으로 그려준다
 
@@ -447,20 +486,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		}
 		else if (Page == 1 || Page == 2) {
 			
-			StartPageBit2 = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
-
 			//StartCreate가 True라면 StartPage가 완성된 상태이고 False라면 페이드 아웃, 페이드 인등 미완성된 상태이다.
 			if(StartCreate)
 				PatBlt(mem1dc, 0, 0, ScreenX, ScreenY, WHITENESS);
 
-			//Startdc1 = 비트맵
-			Startdc1 = CreateCompatibleDC(hdc);
-			//Startdc2 = 글씨
-			Startdc2 = CreateCompatibleDC(hdc);		
-
-			//StartPage 배경을 그리기 위한 더블버퍼링 작업
-			OldStartPageBit1 = (HBITMAP)SelectObject(Startdc1, StartPageBit1);
-			
 		
 			//알파블렌딩 (투명화)를 위한 작업
 			BLENDFUNCTION bf1;
@@ -472,30 +501,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
 			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Startdc1, 0, 0,ScreenX, ScreenY, bf1);
 
-			SelectObject(Startdc1, OldStartPageBit1);
-			//DeleteObject(StartPageBit1);
-			DeleteDC(Startdc1);
-
-
-			//Startdc2를 선택
-			OldStartPageBit2 = (HBITMAP)SelectObject(Startdc2, StartPageBit2);
-
 			//mem1dc에 그려진걸 Startdc2에 복사한다.
 			BitBlt(Startdc2, 0, 0, ScreenX, ScreenY, mem1dc, 0, 0, SRCCOPY);
-
-			//텍스트의 배경을 투명한 색으로 지정함.
-			SetBkMode(Startdc2, TRANSPARENT);
 
 			//Startdc2에 Page들을 Paint한다.
 			if (Page == 1) {
 				PaintStartPage(Startdc2, Click);
 			}
 			else {
-				Helpdc1 = CreateCompatibleDC(Startdc2);
 				PaintHelpPage(Startdc2, Helpdc1, Help);
-				DeleteObject(Helpdc1);
 			}
-		
 
 			//알파블렌딩 (투명화)를 위한 작업
 			BLENDFUNCTION bf2;
@@ -506,29 +521,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
 			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Startdc2, 0, 0, ScreenX, ScreenY, bf2);
-
-			SelectObject(Startdc2, OldStartPageBit2);
-			DeleteObject(StartPageBit2);
-			DeleteDC(Startdc2);
 		}
 		else if (Page == 3) {
 			PaintLoadingPage(mem1dc, LoadingCount * 2);
 		}
 		else if (Page == 10) {
-			//화면 인터페이스 구현을 위한 Gamedc1 선언
-			Gamedc1 = CreateCompatibleDC(hdc);
-			Gamedc2 = CreateCompatibleDC(hdc);		
-			Gamedc3 = CreateCompatibleDC(hdc);
-
-			GamePlayBit1 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
-			GamePlayBit3 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
-
-		
-		
-			OldGamePlayBit3 = (HBITMAP)SelectObject(Gamedc3, GamePlayBit3);
-			OldGamePlayBit1 = (HBITMAP)SelectObject(Gamedc1, GamePlayBit1);
 			
-	
 			//Gamedc1에 GameMap을 그려준다.
 			Inter->PaintBackGround(Gamedc1, Gamedc2);
 
@@ -536,28 +534,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			for (int L = 0; L < 80; L++)
 				LEnemy[L]->PaintEnmey(Gamedc1, Gamedc2);
 			WEnemy->PaintEnmey(Gamedc1, Gamedc2);
-
+			
 
 			//발사체들을 Gamedc1에 그려준다.
 			for (int L = 0; L < LENEMYMAX; L++)
-				LEnemy[L]->PaintShot(&Gamedc1, &Gamedc2, &Gamedc3);
-			WEnemy->PaintShot(&Gamedc1, &Gamedc2, &Gamedc3);
+				LEnemy[L]->PaintShot(Gamedc1, Gamedc2, Gamedc3);
+			WEnemy->PaintShot(Gamedc1, Gamedc2, Gamedc3);
 			for (int B = 0; B < BENEMYMAX; B++)
-				BEnemy[B]->PaintShot(&Gamedc1, &Gamedc2, &Gamedc3);
+				BEnemy[B]->PaintShot(Gamedc1, Gamedc2, Gamedc3);
 
 
 			//플레이어 관련을 Gamedc1에 그려준다.
 			player->PaintPlayer(Gamedc1);
 			player->PaintPlayerIF(Gamedc1, Gamedc2);
 
-
 			//GameMap 선들을 그려준다.
 			Inter->PaintBackGroundLine(Gamedc1);
-		
-			//사용이 끝난 객체들 삭제
-			DeleteObject(SelectObject(Gamedc3, OldGamePlayBit3));
-			DeleteDC(Gamedc2);
-			DeleteDC(Gamedc3);
 
 			//Gamedc1에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.
 
@@ -589,7 +581,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//인터페이스 오른쪽 테두리 복사
 				BitBlt(mem1dc, ScreenX - 30, 700, 30, GamePageLoading - 700, Gamedc1, ALLMAPX - 30, ALLMAPY - 120, SRCCOPY);
 			}
-				
 			
 			if (GamePageLoading >= 30) {
 				//30이상이 되어야만 복사를 시작한다.
@@ -601,19 +592,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//700이상이 되면 다 로딩이 됬기 떄문에 그냥 670의 크기만큼 복사한다.
 					BitBlt(mem1dc, 30, 30, 1220, 670, Gamedc1, camera->GetCLeft(), camera->GetCTop(), SRCCOPY);
 			}
-
-			//삭제
-			DeleteObject(SelectObject(Gamedc1, OldGamePlayBit1));
-			DeleteDC(Gamedc1);
-		
 		}
 		
 		//mem1dc를 hdc로 복사한다.
 		BitBlt(hdc, 0, 0, ScreenX, ScreenY, mem1dc, 0, 0, SRCCOPY); 
-	
 		SelectObject(mem1dc, OldBitmap);
 		DeleteObject(Bitmap);
-		DeleteDC(mem1dc);
 		EndPaint(hwnd, &ps);
 		break;
 	

@@ -159,88 +159,59 @@ void LineEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 			TransparentBlt(hdc, GetXPos() - 40, GetYPos() - 30, 80, 60, Bithdc, 0, 0, 80, 60, RGB(255, 255, 255));
 		}
 	}
-
-	/*if (this->GetCharging() != 0) {
-		//발사 중이라면
-		OldEBrush = (HBRUSH)SelectObject(hdc, LBrush2);
-		OldEPen = (HPEN)SelectObject(hdc, LPen1);
-	}
-	else {
-		//발사 중이 아니라면
-		if(GetDelay()==0)
-			LBrush1 = CreateSolidBrush(RGB(10, 10, 10));
-		else
-			LBrush1 = CreateSolidBrush(RGB((10 - GetDelay()) * 15, 10, 10));
-		OldEBrush = (HBRUSH)SelectObject(hdc, LBrush1);
-		OldEPen = (HPEN)SelectObject(hdc, LPen1);
-	}
-
-	if (abs(Direction) == 1) {
-		//위쪽 포일경우 , //아래쪽 포일경우
-		POINT Pos[4] = { {GetXPos() - 20,GetYPos() - 20 * Direction},{GetXPos() + 20,GetYPos() - 20 * Direction},{GetXPos() + 10,GetYPos() + 35 * Direction},{GetXPos() - 10,GetYPos() + 35 * Direction} };
-
-		Ellipse(hdc, GetXPos() - 20, GetYPos() - 40 * Direction, GetXPos() + 20, GetYPos());
-		Polygon(hdc, Pos, 4);
-		RoundRect(hdc, GetXPos() - 13, GetYPos() + 32 * Direction, GetXPos() + 13, GetYPos() + 38 * Direction, 6, 6);
-	
-	}
-	else {
-		//왼쪽 포일경우, //오른쪽 포일경우
-		POINT Pos[4] = { {GetXPos() - 20 * Direction / 2,GetYPos() - 20},{GetXPos() + 35 * Direction / 2,GetYPos() - 10},{GetXPos() + 35 * Direction / 2,GetYPos() + 10},{GetXPos() - 20 * Direction / 2,GetYPos() + 20} };
-
-		Ellipse(hdc, GetXPos() - 40 * Direction / 2, GetYPos() - 20, GetXPos(), GetYPos() + 20);
-		Polygon(hdc, Pos, 4);
-		RoundRect(hdc, GetXPos() + 32 * Direction / 2, GetYPos() - 13, GetXPos() + 38 * Direction / 2, GetYPos() + 13, 6, 6);
-	}
-	
-	DeleteObject(LBrush1);
-	SelectObject(hdc, OldEBrush);
-	SelectObject(hdc, OldEPen);*/
 }
 
-void LineEnemy::PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const {
+void LineEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 
 	if (GetDelay() != 0) {
 		//발사 시작 시간이 0이 아닐때 
 		if (GetCharging() != 0) {
 			//발사 중일때 
 			//즉 Delay가 1이고 Charging도 1이상일때
-			//OldEBrush = (HBRUSH)SelectObject(hdc, LBrush2);
-			//OldEPen = (HPEN)SelectObject(hdc, LPen2);
-			
-			SelectObject(*Bithdc, LSBitMap[11 - GetCharging()]);
 
-			if (Direction == 1) {
+			if (abs(Direction) == 1) {
+				//상하 발사 비트맵을 불러온다.
+				SelectObject(Bithdc, LSBitMap[22 - GetCharging()]);
+				if (Direction == 1) {
+					//Range * 61인 이유는 *60을 하면 끝처리가 이상하게 나오기 때문이다.
+					//600사이즈를 Range*60만큼의 사이즈로 늘려준다.
+					StretchBlt(Bithdc2, 0, 0, 60, Range * 61, Bithdc, 0, 600, 60, -600, SRCCOPY);
 
+					//배경색을 지워서 발사포를 출력해준다.
+					TransparentBlt(hdc, GetXPos() - 30, GetYPos() + 45, 60, Range * 60, Bithdc2, 0, 0, 60, Range * 60, RGB(255, 255, 255));
+				}
+				else {
+					StretchBlt(Bithdc2, 0, 0, 60, Range * 60, Bithdc, 0, 0, 60, 600, SRCCOPY);
+					TransparentBlt(hdc, GetXPos() - 30, GetYPos() - 45 - (Range * 60), 60, Range * 60, Bithdc2, 0, 0, 60, Range * 60, RGB(255, 255, 255));
+				}
 			}
-			else if (Direction == -1) {
-
-			}
-			else if (Direction == 2) {
-				//TransparentBlt(*Bithdc, 0, 0, 600, 60, memhdc, 0, 0, 600, 60, RGB(255, 255, 255));
-				//StretchBlt(*hdc, GetXPos() + 45, GetYPos() - 30, (Range * 60), 60, *Bithdc, 600, 0, -600, 60, SRCCOPY);
-			}
-			else {
-				StretchBlt(*Bithdc2, 0, 0, Range * 60, 60, *Bithdc, 0, 0, 600, 60, SRCCOPY);
-				//BitBlt(*hdc, GetXPos() - 45 - (Range * 60), GetYPos() - 30, Range * 60, 60, *Bithdc, 0, 0, SRCCOPY);
-				TransparentBlt(*hdc, GetXPos() - 45 - (Range * 60), GetYPos() - 30, Range * 60, 60, *Bithdc2, 0, 0, Range * 60, 60, RGB(255, 255, 255));
+			else if (abs(Direction) == 2) {
+				SelectObject(Bithdc, LSBitMap[11 - GetCharging()]);
+				if (Direction == 2) {
+					StretchBlt(Bithdc2, 0, 0, Range * 61, 60, Bithdc, 600, 0, -600, 60, SRCCOPY);
+					TransparentBlt(hdc, GetXPos() + 45, GetYPos() - 30, Range * 60, 60, Bithdc2, 0, 0, Range * 60, 60, RGB(255, 255, 255));
+				}
+				else {
+					StretchBlt(Bithdc2, 0, 0, Range * 60, 60, Bithdc, 0, 0, 600, 60, SRCCOPY);
+					TransparentBlt(hdc, GetXPos() - 45 - (Range * 60), GetYPos() - 30, Range * 60, 60, Bithdc2, 0, 0, Range * 60, 60, RGB(255, 255, 255));
+				}
 			}
 		}
 		else {
 			//발사 대기중일때 
 			//즉 Delay가 1이상이고 Charging은 0일때
-			SetBkMode(*hdc, TRANSPARENT);
-			OldEBrush = (HBRUSH)SelectObject(*hdc, LBrush3);
-			OldEPen = (HPEN)SelectObject(*hdc, LPen2);
+
+			OldEBrush = (HBRUSH)SelectObject(hdc, LBrush3);
+			OldEPen = (HPEN)SelectObject(hdc, LPen2);
 
 			if (abs(Direction) == 1) {
-				Rectangle(*hdc, GetXPos() - 30, GetYPos() + 45 * Direction, GetXPos() + 30, GetYPos() + (45 + Range * 60) * Direction);
+				Rectangle(hdc, GetXPos() - 30, GetYPos() + 45 * Direction, GetXPos() + 30, GetYPos() + (45 + Range * 60) * Direction);
 			}
 			else {
-				Rectangle(*hdc, GetXPos() + 45 * Direction / 2, GetYPos() - 30, GetXPos() + (45 + Range * 60) * Direction / 2, GetYPos() + 30);
+				Rectangle(hdc, GetXPos() + 45 * Direction / 2, GetYPos() - 30, GetXPos() + (45 + Range * 60) * Direction / 2, GetYPos() + 30);
 			}
-			SelectObject(*hdc, OldEBrush);
-			SelectObject(*hdc, OldEPen);
+			SelectObject(hdc, OldEBrush);
+			SelectObject(hdc, OldEPen);
 		}
 
 		
@@ -252,12 +223,12 @@ void CreateLEnemy(LineEnemy** Lenemy) {
 	for (int i = 0; i < 4; i++) {
 		wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\LineEnemy%d.bmp", i + 1);
-		LBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		LBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	}
-	for (int i = 0; i < 11; i++) {
+	for (int i = 0; i < 22; i++) {
 		wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\LineShot%d.bmp", i + 1);
-		LSBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		LSBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	}
 
 	LBrush2 = CreateSolidBrush(RGB(152, 10, 10));
@@ -404,14 +375,13 @@ void WideEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 	TransparentBlt(hdc, GetXPos() - 45, GetYPos() - 45, 90, 90, Bithdc, 0, 0, 90, 90, RGB(0, 0, 0));
 }
 
-void WideEnemy::PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const {
+void WideEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 	if (GetDelay() != 0) {
 		//발사 중이거나 발사 대기중일때 작동
 		if (GetCharging() == 0) {
 			//발사 대기중이라면
-			SetBkMode(*hdc, TRANSPARENT);
-			OldEBrush = (HBRUSH)SelectObject(*hdc, WSBrush2); 
-			OldEPen = (HPEN)SelectObject(*hdc, WSPen);
+			OldEBrush = (HBRUSH)SelectObject(hdc, WSBrush2); 
+			OldEPen = (HPEN)SelectObject(hdc, WSPen);
 
 			POINT Pos[6];
 			//각 방향별로 Pos값을 다르게 설정
@@ -448,24 +418,24 @@ void WideEnemy::PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const {
 				Pos[5] = { RIGHTWALL,(TOPWALL + BOTTOMWALL) / 2 };
 			}
 			//폴리곤으로 그리기
-			Polygon(*hdc, Pos, 6);
+			Polygon(hdc, Pos, 6);
 
-			SelectObject(*hdc, OldEBrush);
-			SelectObject(*hdc, OldEPen);
+			SelectObject(hdc, OldEBrush);
+			SelectObject(hdc, OldEPen);
 
 		}
 		else {
 			//발사중이라면
 			if (GetCharging() > 2 && GetCharging() < 10) {
-				SelectObject(*Bithdc, WSBitmap[9 - GetCharging()]);
+				SelectObject(Bithdc, WSBitmap[9 - GetCharging()]);
 				if (Direction == 1)
-					TransparentBlt(*hdc, LEFTWALL, TOPWALL, 600, 600, *Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
+					TransparentBlt(hdc, LEFTWALL, TOPWALL, 600, 600, Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
 				else if (Direction == 2)
-					TransparentBlt(*hdc, LEFTWALL + 600, TOPWALL, 600, 600, *Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
+					TransparentBlt(hdc, LEFTWALL + 600, TOPWALL, 600, 600, Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
 				else if (Direction == 3)
-					TransparentBlt(*hdc, LEFTWALL, TOPWALL + 600, 600, 600, *Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
+					TransparentBlt(hdc, LEFTWALL, TOPWALL + 600, 600, 600, Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
 				else
-					TransparentBlt(*hdc, LEFTWALL + 600, TOPWALL + 600, 600, 600, *Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
+					TransparentBlt(hdc, LEFTWALL + 600, TOPWALL + 600, 600, 600, Bithdc, 0, 0, 600, 600, RGB(255, 255, 255));
 			}
 		}
 	}
@@ -480,13 +450,13 @@ void CreateWEnemy(WideEnemy** Wenemy) {
 
 
 	//WideEnemy에서 사용될 Bitmap들을 불러온다.
-	WEBitmap1 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-	WEBitmap2 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy2.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	WEBitmap1 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	WEBitmap2 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy2.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
 	for (int i = 0; i < 7; i++) {
 		wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\WideShot%d.bmp", i + 1);
-		WSBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		WSBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	}
 
 	if (*Wenemy == NULL) {
@@ -600,43 +570,43 @@ void BombEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 	//일단 Enemy그리기는 나중에 하자.
 }
 
-void BombEnemy::PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const {
+void BombEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 	if (GetDelay() != 0) {
 		//폭탄이 떨어진 후를 뜻함.
 
 		//Brush와 Pen 선택
-		OldEBrush = (HBRUSH)SelectObject(*hdc, BBrush1);
-		OldEPen = (HPEN)SelectObject(*hdc, BPen1);
+		OldEBrush = (HBRUSH)SelectObject(hdc, BBrush1);
+		OldEPen = (HPEN)SelectObject(hdc, BPen1);
 
 		if (GetCharging() == 0) {
 			//폭파 대기상태
 
 			//폭탄 범위 그리기
-			Rectangle(*hdc, LEFTWALL + (DXPos - 2) * 60, TOPWALL + (DYPos - 1) * 60, LEFTWALL + (DXPos + 3) * 60, TOPWALL + (DYPos + 2) * 60);
-			Rectangle(*hdc, LEFTWALL + (DXPos - 1) * 60, TOPWALL + (DYPos - 2) * 60, LEFTWALL + (DXPos + 2) * 60, TOPWALL + (DYPos + 3) * 60);
+			Rectangle(hdc, LEFTWALL + (DXPos - 2) * 60, TOPWALL + (DYPos - 1) * 60, LEFTWALL + (DXPos + 3) * 60, TOPWALL + (DYPos + 2) * 60);
+			Rectangle(hdc, LEFTWALL + (DXPos - 1) * 60, TOPWALL + (DYPos - 2) * 60, LEFTWALL + (DXPos + 2) * 60, TOPWALL + (DYPos + 3) * 60);
 
 			//폭탄 그리기
-			SelectObject(*Bithdc, BBitmap);
-			TransparentBlt(*hdc, LEFTWALL + DXPos * 60, TOPWALL + DYPos * 60, 60, 60, *Bithdc, 0, 0, 60, 60, RGB(255, 255, 255));
+			SelectObject(Bithdc, BBitmap);
+			TransparentBlt(hdc, LEFTWALL + DXPos * 60, TOPWALL + DYPos * 60, 60, 60, Bithdc, 0, 0, 60, 60, RGB(255, 255, 255));
 		}
 		else {
 			//폭파상태
-			SelectObject(*Bithdc, EXBitmap[11 - GetCharging()]);
-			TransparentBlt(*hdc, LEFTWALL + (DXPos-2) * 60, TOPWALL + (DYPos-2) * 60, 300, 300, *Bithdc, 0, 0, 300, 300, RGB(255, 255, 255));
+			SelectObject(Bithdc, EXBitmap[11 - GetCharging()]);
+			TransparentBlt(hdc, LEFTWALL + (DXPos-2) * 60, TOPWALL + (DYPos-2) * 60, 300, 300, Bithdc, 0, 0, 300, 300, RGB(255, 255, 255));
 		}
 
-		SelectObject(*hdc, OldEBrush);
-		SelectObject(*hdc, OldEPen);
+		SelectObject(hdc, OldEBrush);
+		SelectObject(hdc, OldEPen);
 	}
 }
 
 void CreateBEnemy(BombEnemy** Benemy) {
 
-	BBitmap = (HBITMAP)LoadImage(NULL, L".\\BitMap\\Bomb.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+	BBitmap = (HBITMAP)LoadImage(NULL, L".\\BitMap\\Bomb.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	for (int i = 0; i < 11; i++) {
 		wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\BombEX%d.bmp", i);
-		EXBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		EXBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	}
 		
 
@@ -740,7 +710,7 @@ void RectEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 
 }
 
-void RectEnemy::PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const {
+void RectEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 
 }
 

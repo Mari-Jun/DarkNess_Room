@@ -52,8 +52,8 @@ void Interface::PaintBackGround(HDC hdc, HDC Bithdc) {
 
 
 	//플레이 맵 그리기
-	//SelectObject(Bithdc, BackGroundBit3);
-	//BitBlt(hdc, LEFTWALL, TOPWALL, RIGHTWALL - LEFTWALL, BOTTOMWALL - TOPWALL, Bithdc, 0, 0, SRCCOPY);
+	SelectObject(Bithdc, BackGroundBit[2]);
+	BitBlt(hdc, LEFTWALL, TOPWALL, RIGHTWALL - LEFTWALL, BOTTOMWALL - TOPWALL, Bithdc, 0, 0, SRCCOPY);
 
 	//중간 섬 그리기
 	SelectObject(Bithdc, BackGroundBit[1]);
@@ -93,7 +93,7 @@ void CreateInterface(Interface** inter) {
 		for (int i = 0; i < 4; i++) {
 			wchar_t str[100];
 			swprintf_s(str, L".\\BitMap\\Interface%d.bmp", i + 1);
-			BackGroundBit[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+			BackGroundBit[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 		}
 	}
 	

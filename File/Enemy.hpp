@@ -24,7 +24,7 @@ public:
 	virtual void SetHitCheck(Player* player, bool OnOff) const = 0;		//HitCheck를 설정한다.
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const = 0;
-	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2S) const = 0;
+	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2S) const = 0;
 	
 private:
 	int XPos;														//적의 X축 위치
@@ -46,7 +46,7 @@ static HPEN LPen2;
 static HPEN LPen3;
 
 static HBITMAP LBitMap[4];
-static HBITMAP LSBitMap[11];
+static HBITMAP LSBitMap[22];
 
 class LineEnemy : public Enemy {
 public:
@@ -60,7 +60,7 @@ public:
 	virtual void SetHitCheck(Player* player, bool OnOff) const;
 		
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//직선포적 적을 그린다.
-	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;						//직선포적 포를 그린다.
+	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;						//직선포적 포를 그린다.
 private:
 	int Range;													//피격 범위
 	int Direction;												//포 방향
@@ -95,7 +95,7 @@ public:
 	virtual void SetHitCheck(Player* player, bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//광역포적 적을 그린다.
-	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;						//광역포적 포를 그린다.
+	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;						//광역포적 포를 그린다.
 private:
 	int Direction;												//광역 방향
 };
@@ -125,7 +125,7 @@ public:
 	virtual void SetHitCheck(Player* player, bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//폭탄적 적을 그린다.
-	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;			//폭탄적 폭탄을 그린다.
+	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;			//폭탄적 폭탄을 그린다.
 private:
 	int DXPos;													//떨어지는 X축 위치
 	int DYPos;													//떨어지는 Y축 위치
@@ -148,7 +148,7 @@ public:
 virtual void SetHitCheck(Player* player, bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;				//범위포적 적을 그린다.
-	virtual void PaintShot(HDC* hdc, HDC* Bithdc, HDC* Bithdc2) const;							//범위포적 포를 그린다.
+	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;							//범위포적 포를 그린다.
 private:
 	int Count;														//떨어지는 포의 개수
 };

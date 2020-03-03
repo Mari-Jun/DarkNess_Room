@@ -103,46 +103,46 @@ void Player::PaintPlayer(HDC hdc) const {
 
 	if (KeyUp && KeyLeft) {
 		//위쪽+오른쪽
-		this->SetPoint(Pos, 45.0);
+		SetPoint(Pos, 45.0);
 		Rad = 45.0;
 	}
 	else if (KeyUp && KeyRight) {
 		//위쪽+오른쪽
-		this->SetPoint(Pos, 315.0);
+		SetPoint(Pos, 315.0);
 		Rad = 315.0;
 	}
 	else if (KeyDown && KeyLeft) {
 		//아래쪽+왼쪽
-		this->SetPoint(Pos, 135.0);
+		SetPoint(Pos, 135.0);
 		Rad = 135.0;
 	}
 	else if (KeyDown && KeyRight) {
 		//아래쪽+오른쪽
-		this->SetPoint(Pos, 225.0);
+		SetPoint(Pos, 225.0);
 		Rad = 225.0;
 	}
 	else if (KeyUp && !KeyDown) {
 		//위쪽
-		this->SetPoint(Pos, 0.0);
+		SetPoint(Pos, 0.0);
 		Rad = 0.0;
 	}
 	else if (KeyDown && !KeyUp) {
 		//아래쪽
-		this->SetPoint(Pos, 180.0);
+		SetPoint(Pos, 180.0);
 		Rad = 180.0;
 	}
 	else if (KeyLeft && !KeyRight) {
 		//왼쪽
-		this->SetPoint(Pos, 90.0);
+		SetPoint(Pos, 90.0);
 		Rad = 90.0;
 	}
 	else if (KeyRight && !KeyLeft) {
 		//오른쪽
-		this->SetPoint(Pos, 270.0);
+		SetPoint(Pos, 270.0);
 		Rad = 270.0;
 	}
 	else {
-		this->SetPoint(Pos, Rad);
+		SetPoint(Pos, Rad);
 	}
 
 	OldPPen = (HPEN)SelectObject(hdc, PlayerPen1);
