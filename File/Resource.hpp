@@ -55,4 +55,5 @@ static const int PBOTTOMWALL = 1500;
 
 //에너미 최대 수
 static const int LENEMYMAX = 80;
-static const int BENEMYMAX = 4;
+static const int BENEMYMAX = 6;
+static const int AENEMYMAX = 2;

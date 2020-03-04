@@ -92,7 +92,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static LineEnemy* LEnemy[LENEMYMAX];
 	static WideEnemy* WEnemy;
 	static BombEnemy* BEnemy[BENEMYMAX];
-	//static RectEnemy* REnemy;
+	static AirEnemy* AEnemy[AENEMYMAX];
 
 	//마우스 좌표
 	int Mx, My;
@@ -386,6 +386,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					CreateLEnemy(LEnemy);
 					CreateWEnemy(&WEnemy);
 					CreateBEnemy(BEnemy);
+					CreateAEnemy(AEnemy);
 
 					//GamePage를 위한 HDC, BITMAP들 생성
 					
@@ -435,7 +436,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			case 1:
 				//직선포 최대 20개
 				LMaxShot = 20;
-				BMaxShot = 0;
+				BMaxShot = 1;
 				break;
 			}
 
@@ -531,9 +532,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			Inter->PaintBackGround(Gamedc1, Gamedc2);
 
 			//에너미들을 Gamedc1에 그려준다.
-			for (int L = 0; L < 80; L++)
+			for (int L = 0; L < LENEMYMAX; L++)
 				LEnemy[L]->PaintEnmey(Gamedc1, Gamedc2);
 			WEnemy->PaintEnmey(Gamedc1, Gamedc2);
+			for (int B = 0; B < BENEMYMAX; B++)
+				BEnemy[B]->PaintEnmey(Gamedc1, Gamedc2);
 			
 
 			//발사체들을 Gamedc1에 그려준다.

@@ -5,18 +5,8 @@
 
 //기본 에너미
 
-Enemy::Enemy(int X, int Y, int C, int D) : XPos(X), YPos(Y), Charging(C), Delay(D) {
+Enemy::Enemy(int C, int D) : Charging(C), Delay(D) {
 
-}
-
-const int Enemy::GetXPos() const {
-	//XPos값을 반환한다.
-	return XPos;
-}
-
-const int Enemy::GetYPos() const {
-	//YPos값을 반환한다.
-	return YPos;
 }
 
 const int Enemy::GetCharging() const {
@@ -74,9 +64,54 @@ bool Enemy::ChangeDelay() {
 	return false;
 }
 
+//고정 에너미
+
+FixEnemy::FixEnemy(int C, int D, int X, int Y) : Enemy(C, D), XPos(X), YPos(Y) {
+
+}
+
+const int FixEnemy::GetXPos() const {
+	//XPos값을 반환한다.
+	return XPos;
+}
+
+const int FixEnemy::GetYPos() const {
+	//YPos값을 반환한다.
+	return YPos;
+}
+
+
+//이동 에너미
+
+MoveEnemy::MoveEnemy(int C, int D, int X, int Y) : Enemy(C, D), XPos(X), YPos(Y) {
+
+}
+
+const int MoveEnemy::GetXPos() const {
+	//XPos값을 반환한다.
+	return XPos;
+}
+
+const int MoveEnemy::GetYPos() const {
+	//YPos값을 반환한다.
+	return YPos;
+}
+
+void MoveEnemy::ChangeXPos(int X) {
+	//XPos값을 변경한다.
+	XPos = X;
+}
+
+void MoveEnemy::ChangeYPos(int Y) {
+	//YPos값을 변경한다.
+	YPos = Y;
+}
+
+
+
 //직선포 에너미
 
-LineEnemy::LineEnemy(int X, int Y, int C, int D, int R, int Di) : Enemy(X, Y, C, D), Range(R), Direction(Di){
+LineEnemy::LineEnemy(int C, int D, int X, int Y, int R, int Di) : FixEnemy(C, D, X, Y), Range(R), Direction(Di){
 
 }
 
@@ -201,8 +236,8 @@ void LineEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 			//발사 대기중일때 
 			//즉 Delay가 1이상이고 Charging은 0일때
 
-			OldEBrush = (HBRUSH)SelectObject(hdc, LBrush3);
-			OldEPen = (HPEN)SelectObject(hdc, LPen2);
+			OldEBrush = (HBRUSH)SelectObject(hdc, LBrush);
+			OldEPen = (HPEN)SelectObject(hdc, LPen);
 
 			if (abs(Direction) == 1) {
 				Rectangle(hdc, GetXPos() - 30, GetYPos() + 45 * Direction, GetXPos() + 30, GetYPos() + (45 + Range * 60) * Direction);
@@ -231,42 +266,36 @@ void CreateLEnemy(LineEnemy** Lenemy) {
 		LSBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	}
 
-	LBrush2 = CreateSolidBrush(RGB(152, 10, 10));
-	LBrush3 = CreateHatchBrush(HS_FDIAGONAL, RGB(100, 0, 0));
-	LPen1 = CreatePen(PS_SOLID, 1, RGB(50, 0, 0));
-	LPen2 = CreatePen(PS_SOLID, 1, RGB(150, 0, 0));
+	LBrush = CreateHatchBrush(HS_FDIAGONAL, RGB(100, 0, 0));
+	LPen = CreatePen(PS_SOLID, 1, RGB(150, 0, 0));
 	
 	for (int i = 0; i < LENEMYMAX; i++) {
 		if (i >= 0 && i < 20) {
 			if (Lenemy[i] == NULL)
 				//Lenemy[i]가 NULL이면 위쪽 포 생성
-				Lenemy[i] = new LineEnemy(150 + 60 * i, CTOPWALL + 45, 0, 0, 0, 1);
+				Lenemy[i] = new LineEnemy(0, 0, 150 + 60 * i, CTOPWALL + 45, 0, 1);
 		}
 		else if (i >= 20 && i < 40) {
 			if (Lenemy[i] == NULL)
 				//Lenemy[i]가 NULL이면 왼쪽 포 생성
-				Lenemy[i] = new LineEnemy(CLEFTWALL + 45, 150 + 60 * (i - 20), 0, 0, 0, 2);
+				Lenemy[i] = new LineEnemy(0, 0, CLEFTWALL + 45, 150 + 60 * (i - 20), 0, 2);
 		}
 		else if (i >= 40 && i < 60) {
 			if (Lenemy[i] == NULL)
 				//Lenemy[i]가 NULL이면 오른쪽 포 생성
-				Lenemy[i] = new LineEnemy(CRIGHTWALL - 45, 150 + 60 * (i - 40), 0, 0, 0, -2);
+				Lenemy[i] = new LineEnemy(0, 0, CRIGHTWALL - 45, 150 + 60 * (i - 40), 0, -2);
 		}
 		else {
 			if (Lenemy[i] == NULL)
 				//Lenemy[i]가 NULL이면 아래쪽 포 생성
-				Lenemy[i] = new LineEnemy(150 + 60 * (i - 60), CBOTTOMWALL - 45, 0, 0, 0, -1);
+				Lenemy[i] = new LineEnemy(0, 0, 150 + 60 * (i - 60), CBOTTOMWALL - 45, 0, -1);
 		}
 	}
 }
 
 void DeleteLEnemy(LineEnemy** Lenemy) {
-	DeleteObject(LBrush1);
-	DeleteObject(LBrush2);
-	DeleteObject(LBrush3);
-	DeleteObject(LPen1);
-	DeleteObject(LPen2);
-	DeleteObject(LPen3);
+	DeleteObject(LBrush);
+	DeleteObject(LPen);
 	DeleteObject(LBitMap);
 
 	for (int i = 0; i < LENEMYMAX; i++) {
@@ -334,7 +363,7 @@ int ChangeLInfo(LineEnemy** Lenemy, Player* player) {
 
 //광역포 에너미
 
-WideEnemy::WideEnemy(int X, int Y, int C, int D, int Di) : Enemy(X, Y, C, D), Direction(Di) {
+WideEnemy::WideEnemy(int C, int D, int X, int Y, int Di) : FixEnemy(C, D, X, Y), Direction(Di) {
 
 }
 
@@ -380,7 +409,7 @@ void WideEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 		//발사 중이거나 발사 대기중일때 작동
 		if (GetCharging() == 0) {
 			//발사 대기중이라면
-			OldEBrush = (HBRUSH)SelectObject(hdc, WSBrush2); 
+			OldEBrush = (HBRUSH)SelectObject(hdc, WSBrush); 
 			OldEPen = (HPEN)SelectObject(hdc, WSPen);
 
 			POINT Pos[6];
@@ -444,9 +473,8 @@ void WideEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 void CreateWEnemy(WideEnemy** Wenemy) {
 
 	//WideEnemyShotBrush, Pen (으)로 적의 포 색을 표현함.
-	WSBrush1 = CreateSolidBrush(RGB(250, 237, 125));
-	WSBrush2 = CreateHatchBrush(HS_FDIAGONAL, RGB(250, 237, 125));
-	WSPen = CreatePen(PS_SOLID, 1, RGB(196, 183, 59));
+	WSBrush = CreateHatchBrush(HS_FDIAGONAL, RGB(178, 235, 244));
+	WSPen = CreatePen(PS_SOLID, 1, RGB(92, 209, 229));
 
 
 	//WideEnemy에서 사용될 Bitmap들을 불러온다.
@@ -462,7 +490,7 @@ void CreateWEnemy(WideEnemy** Wenemy) {
 	if (*Wenemy == NULL) {
 		//*Wenemy가 NULL일때 작동
 		//WideEnemy는 1개이다.
-		*Wenemy = new WideEnemy((LLEFTWALL + LRIGHTWALL) / 2, (LTOPWALL + LBOTTOMWALL) / 2, 0, 0, 0);
+		*Wenemy = new WideEnemy(0, 0, (LLEFTWALL + LRIGHTWALL) / 2, (LTOPWALL + LBOTTOMWALL) / 2, 0);
 	}
 }
 
@@ -471,8 +499,7 @@ void DeleteWEnemy(WideEnemy** Wenemy) {
 		delete* Wenemy;
 		*Wenemy = NULL;
 
-		DeleteObject(WSBrush1);
-		DeleteObject(WSBrush2);
+		DeleteObject(WSBrush);
 		DeleteObject(WSPen);
 		DeleteObject(WEBitmap1);
 		DeleteObject(WEBitmap2);
@@ -522,18 +549,8 @@ void ChangeWInfo(WideEnemy* Wenemy, Player* player) {
 
 //폭탄 에너미
 
-BombEnemy::BombEnemy(int X, int Y, int C, int D, int DX, int DY) : Enemy(X, Y, C, D), DXPos(DX), DYPos(DY) {
+BombEnemy::BombEnemy(int C, int D, int X, int Y) : MoveEnemy(X, Y, C, D){
 
-}
-
-const int BombEnemy::GetDXPos() const {
-	//DXPos값을 반환한다.
-	return DXPos;
-}
-
-const int BombEnemy::GetDYPos() const {
-	//DYPos값을 반환한다.
-	return DYPos;
 }
 
 void BombEnemy::SetHitCheck(Player* player, bool OnOff) const {
@@ -544,10 +561,10 @@ void BombEnemy::SetHitCheck(Player* player, bool OnOff) const {
 
 	//좌우 -> 위아래 순으로 처리
 	for (int i = 0; i < 2; i++) {
-		Left = DXPos - (2 - i);
-		Right = DXPos + (2 - i);
-		Top = DYPos - (1 + i);
-		Bottom = DYPos + (1 + i);
+		Left = GetXPos() - (2 - i);
+		Right = GetXPos() + (2 - i);
+		Top = GetYPos() - (1 + i);
+		Bottom = GetYPos() + (1 + i);
 		
 		//player의 SetHitCheck를 불러온다.
 		player->SetHitCheck(Left, Right, Top, Bottom, OnOff);
@@ -557,17 +574,27 @@ void BombEnemy::SetHitCheck(Player* player, bool OnOff) const {
 void BombEnemy::SetDropPos() {
 	while (1) {
 		//위,아래,좌,우로 최소한 2칸씩은 남겨놓아야 한다.
-		DXPos = rand() % 16 + 2;
-		DYPos = rand() % 16 + 2;
+		ChangeXPos(rand() % 16 + 2);
+		ChangeYPos(rand() % 16 + 2);
 
 		//중간섬 에서도 당연히 2칸씩은 띄워주어야 한다.
-		if ((DXPos < 6 || DXPos > 13) && (DYPos < 6 || DXPos > 13))
+		if ((GetXPos() < 6 || GetXPos() > 13) || (GetYPos() < 6 || GetYPos() > 13))
 			break;
 	}
 }
 
 void BombEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
-	//일단 Enemy그리기는 나중에 하자.
+	//BombEnemy를 그린다.
+	if (GetDelay() != 0) {
+		//폭탄이 떨어진 상태
+
+		if (GetCharging() == 0) {
+			//폭파 대기 상태
+			//폭탄 그리기
+			SelectObject(Bithdc, BBitmap);
+			TransparentBlt(hdc, LEFTWALL + GetXPos() * 60, TOPWALL + GetYPos() * 60, 60, 60, Bithdc, 0, 0, 60, 60, RGB(255, 255, 255));
+		}
+	}
 }
 
 void BombEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
@@ -575,24 +602,20 @@ void BombEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 		//폭탄이 떨어진 후를 뜻함.
 
 		//Brush와 Pen 선택
-		OldEBrush = (HBRUSH)SelectObject(hdc, BBrush1);
-		OldEPen = (HPEN)SelectObject(hdc, BPen1);
+		OldEBrush = (HBRUSH)SelectObject(hdc, BBrush);
+		OldEPen = (HPEN)SelectObject(hdc, BPen);
 
 		if (GetCharging() == 0) {
 			//폭파 대기상태
 
 			//폭탄 범위 그리기
-			Rectangle(hdc, LEFTWALL + (DXPos - 2) * 60, TOPWALL + (DYPos - 1) * 60, LEFTWALL + (DXPos + 3) * 60, TOPWALL + (DYPos + 2) * 60);
-			Rectangle(hdc, LEFTWALL + (DXPos - 1) * 60, TOPWALL + (DYPos - 2) * 60, LEFTWALL + (DXPos + 2) * 60, TOPWALL + (DYPos + 3) * 60);
-
-			//폭탄 그리기
-			SelectObject(Bithdc, BBitmap);
-			TransparentBlt(hdc, LEFTWALL + DXPos * 60, TOPWALL + DYPos * 60, 60, 60, Bithdc, 0, 0, 60, 60, RGB(255, 255, 255));
+			Rectangle(hdc, LEFTWALL + (GetXPos() - 2) * 60, TOPWALL + (GetYPos() - 1) * 60, LEFTWALL + (GetXPos() + 3) * 60, TOPWALL + (GetYPos() + 2) * 60);
+			Rectangle(hdc, LEFTWALL + (GetXPos() - 1) * 60, TOPWALL + (GetYPos() - 2) * 60, LEFTWALL + (GetXPos() + 2) * 60, TOPWALL + (GetYPos() + 3) * 60);
 		}
 		else {
 			//폭파상태
 			SelectObject(Bithdc, EXBitmap[11 - GetCharging()]);
-			TransparentBlt(hdc, LEFTWALL + (DXPos-2) * 60, TOPWALL + (DYPos-2) * 60, 300, 300, Bithdc, 0, 0, 300, 300, RGB(255, 255, 255));
+			TransparentBlt(hdc, LEFTWALL + (GetXPos()-2) * 60, TOPWALL + (GetYPos()-2) * 60, 300, 300, Bithdc, 0, 0, 300, 300, RGB(255, 255, 255));
 		}
 
 		SelectObject(hdc, OldEBrush);
@@ -610,13 +633,13 @@ void CreateBEnemy(BombEnemy** Benemy) {
 	}
 		
 
-	BBrush1 = CreateHatchBrush(HS_FDIAGONAL, RGB(150, 150, 150));
-	BPen1 = CreatePen(PS_SOLID, 1, RGB(100, 100, 100));
+	BBrush = CreateHatchBrush(HS_FDIAGONAL, RGB(150, 150, 150));
+	BPen = CreatePen(PS_SOLID, 1, RGB(100, 100, 100));
 
 	for (int i = 0; i < BENEMYMAX; i++) {
 		//Benemy[i]가 NULL이면 생성
 		if (Benemy[i] == NULL) {
-			Benemy[i] = new BombEnemy(LLEFTWALL + 30 + (i % 2) * 180, LTOPWALL + 30 + i / 2 * 180, 0, 0, 0, 0);
+			Benemy[i] = new BombEnemy(0, 0, 0, 0);
 		}
 	}
 }
@@ -689,37 +712,75 @@ int ChangeBInfo(BombEnemy** Benemy, Player* player) {
 
 //범위포 에너미
 
-RectEnemy::RectEnemy(int X, int Y, int C, int D, int DX, int DY, int Co) : BombEnemy(X, Y, C, D, DX, DY), Count(Co) {
+AirEnemy::AirEnemy(int C, int D, int X, int Y, int DX, int DY) : MoveEnemy(C, D, X, Y), DXPos(DX), DYPos(DY) {
 
 }
 
-const int RectEnemy::GetCount() const {
-	//Count값을 반환한다.
-	return Count;
-}
+void AirEnemy::SetDropPos(Player* player) {
 
-void RectEnemy::SetCount() {
-
-}
-
-void RectEnemy::SetHitCheck(Player* player, bool OnOff) const {
-
-}
-
-void RectEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
-
-}
-
-void RectEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
-
+	//현재 플레이어가 있는 곳을 타격 위치로 설정한다.
+	DXPos = player->GetXPos();
+	DYPos = player->GetYPos();
 }
 
 
+void AirEnemy::SetHitCheck(Player* player, bool OnOff) const {
+
+}
+
+void AirEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
+
+}
+
+void AirEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
+	if (GetDelay() != 0) {
+		//비행기가 출발했거나 폭탄이 터져있는 상태를 뜻한다.
+		if (GetCharging() == 0) {
+			//아직 터진 상태가 아닐때
+		}
+		else {
+			//터진 상태일때
+			OldEBrush = (HBRUSH)SelectObject(hdc, ABrush);
+			OldEPen = (HPEN)SelectObject(hdc, APen);
 
 
 
 
+			SelectObject(hdc, OldEBrush);
+			SelectObject(hdc, OldEPen);
+		}
+	}
+}
 
-void CreateREnemy(RectEnemy** Renemy) {
+void CreateAEnemy(AirEnemy** Aenemy) {
 
+	//AirEnemy를 불러온다.
+	for (int i = 0; i < 2; i++) {
+		wchar_t str[100];
+		swprintf_s(str, L".\\BitMap\\AirPlane%d.bmp", i);
+		ABitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	}
+	//AirEnemy샷을 불러온다.
+
+
+	ABrush = CreateHatchBrush(HS_FDIAGONAL, RGB(250, 237, 125));
+	APen = CreatePen(PS_SOLID, 1, RGB(232, 229, 109));
+
+	for (int i = 0; i < AENEMYMAX; i++) {
+		if (Aenemy[i] == NULL) {
+			//Aenemy[i]가 NULL일때만 작동한다.
+			Aenemy[i] = new AirEnemy(0, 0, 0, 0, 0, 0);
+		}
+	}
+}
+
+void DeleteAEnemy(AirEnemy** Aenemy) {
+
+
+	for(int i=0; i<AENEMYMAX; i++)
+		if (Aenemy[i] != NULL) {
+			//Aenemy[i]가 NULL이 아닐경우 작동
+			delete Aenemy[i];
+			Aenemy[i] = NULL;
+		}
 }
