@@ -116,10 +116,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static int GameTime = 0;
 
 	//현재 에너미별 발사 된 수
-	static int LShot = 0, BShot = 0;
+	static int LShot = 0, BShot = 0, AShot = 0;
 
 	//최대 에너미별 발사 수
-	static int LMaxShot = 0, BMaxShot = 0;
+	static int LMaxShot = 0, BMaxShot = 0, AMaxShot = 0;
 
 
 	switch (iMsg)
@@ -437,6 +437,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//직선포 최대 20개
 				LMaxShot = 20;
 				BMaxShot = 1;
+				AMaxShot = 1;
 				break;
 			}
 
@@ -462,6 +463,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					SelectBShot(BEnemy);
 				}
 				BShot = ChangeBInfo(BEnemy, player);
+
+				//AirEnemy
+				for (AShot; AShot < AMaxShot; AShot++) {
+					SelectAShot(AEnemy, player);
+				}
+				AShot = ChangeAInfo(AEnemy, player);
 
 				//플레이어가 적의 공격에 맞았는지 확인한다.
 				player->CheckHitCheck();
@@ -529,15 +536,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		else if (Page == 10) {
 			
 			//Gamedc1에 GameMap을 그려준다.
-			Inter->PaintBackGround(Gamedc1, Gamedc2);
-
-			//에너미들을 Gamedc1에 그려준다.
-			for (int L = 0; L < LENEMYMAX; L++)
-				LEnemy[L]->PaintEnmey(Gamedc1, Gamedc2);
-			WEnemy->PaintEnmey(Gamedc1, Gamedc2);
-			for (int B = 0; B < BENEMYMAX; B++)
-				BEnemy[B]->PaintEnmey(Gamedc1, Gamedc2);
-			
+			Inter->PaintBackGround(Gamedc1, Gamedc2);			
 
 			//발사체들을 Gamedc1에 그려준다.
 			for (int L = 0; L < LENEMYMAX; L++)
@@ -545,10 +544,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			WEnemy->PaintShot(Gamedc1, Gamedc2, Gamedc3);
 			for (int B = 0; B < BENEMYMAX; B++)
 				BEnemy[B]->PaintShot(Gamedc1, Gamedc2, Gamedc3);
+			for (int A = 0; A < AENEMYMAX; A++)
+				AEnemy[A]->PaintShot(Gamedc1, Gamedc2, Gamedc3);
+
+			//에너미들을 Gamedc1에 그려준다.
+			for (int L = 0; L < LENEMYMAX; L++)
+				LEnemy[L]->PaintEnmey(Gamedc1, Gamedc2);
+			WEnemy->PaintEnmey(Gamedc1, Gamedc2);
+			for (int B = 0; B < BENEMYMAX; B++)
+				BEnemy[B]->PaintEnmey(Gamedc1, Gamedc2);
+			for (int A = 0; A < AENEMYMAX; A++)
+				AEnemy[A]->PaintEnmey(Gamedc1, Gamedc2);
 
 
 			//플레이어 관련을 Gamedc1에 그려준다.
-			player->PaintPlayer(Gamedc1);
+			player->PaintPlayer(Gamedc1, Gamedc2);
 			player->PaintPlayerIF(Gamedc1, Gamedc2);
 
 			//GameMap 선들을 그려준다.

@@ -89,7 +89,7 @@ void Player::SetPoint(POINT* Pos, double Num) const{
 	}
 }
 
-void Player::PaintPlayer(HDC hdc) const {
+void Player::PaintPlayer(HDC hdc, HDC Bithdc) const {
 	bool KeyUp = (GetAsyncKeyState(VK_UP) & 0x8000);
 	bool KeyDown = (GetAsyncKeyState(VK_DOWN) & 0x8000);
 	bool KeyLeft = (GetAsyncKeyState(VK_LEFT) & 0x8000);
@@ -145,10 +145,19 @@ void Player::PaintPlayer(HDC hdc) const {
 		SetPoint(Pos, Rad);
 	}
 
+	OldPBrush = (HBRUSH)SelectObject(hdc, PlayerBrush1);
 	OldPPen = (HPEN)SelectObject(hdc, PlayerPen1);
 
 	Polygon(hdc, Pos, 5);
 
+	if (GetSkillE() > 50) {
+		//E스킬이 사용중이라면
+		SelectObject(Bithdc, SkillEUseBit);
+
+		TransparentBlt(hdc, XPos - 20, YPos - 20, 40, 40, Bithdc, 0, 0, 40, 40, RGB(255, 255, 255));
+	}
+
+	SelectObject(hdc, OldPBrush);
 	SelectObject(hdc, OldPPen);
 }
 
@@ -184,6 +193,13 @@ void Player::UseSkill(WPARAM wParam) {
 		if (GetSkillQ() == 0)
 			UseSkillQ();
 		break;
+	case 'w':
+		if (GetSkillW() == 0)
+			UseSkillW();
+		break;
+	case 'e':
+		if (GetSkillE() == 0)
+			UseSkillE();
 	default:
 		break;
 	}
@@ -227,7 +243,8 @@ void Player::UseSkillW() {
 }
 
 void Player::UseSkillE() {
-
+	//SkillE 쿨다운 초기화
+	SkillE = 60;
 }
 
 void Player::SetHitCheck(int Left, int Right, int Top, int Bottom, bool OnOff) {
@@ -244,16 +261,20 @@ void Player::SetHitCheck(int Left, int Right, int Top, int Bottom, bool OnOff) {
 
 void Player::CheckHitCheck() {
 	 
-	if (HitCheck[(YPos - 130) / 60][(XPos - 130) / 60] > 0 ||
-		HitCheck[(YPos - 130) / 60][(XPos - 110) / 60] > 0 ||
-		HitCheck[(YPos - 110) / 60][(XPos - 130) / 60] > 0 ||
-		HitCheck[(YPos - 110) / 60][(XPos - 110) / 60] > 0) {
-		
-		//플레이어의 (순서대로) 왼쪽위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 지점의 HitCheck가 1이상일 경우
+	if (SkillE < 50) {
+		//SkillE 무적 상태 게임시간 약(10초) 동안은 무적이다.
+		if (HitCheck[(YPos - 130) / 60][(XPos - 130) / 60] > 0 ||
+			HitCheck[(YPos - 130) / 60][(XPos - 110) / 60] > 0 ||
+			HitCheck[(YPos - 110) / 60][(XPos - 130) / 60] > 0 ||
+			HitCheck[(YPos - 110) / 60][(XPos - 110) / 60] > 0) {
 
-		//Health를 감소시킨다.
-		Health--;
+			//플레이어의 (순서대로) 왼쪽위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 지점의 HitCheck가 1이상일 경우
+
+			//Health를 감소시킨다.
+			Health--;
+		}
 	}
+	
 }
 
 
@@ -286,13 +307,19 @@ void Player::PaintPlayerIF(HDC hdc, HDC Bithdc) const {
 
 	//Q스킬
 	Rectangle(hdc, 550, PTOPWALL + 5, 600, PBOTTOMWALL - 5);
+	SelectObject(Bithdc, SKillQBit);
+	TransparentBlt(hdc, 550, PTOPWALL + 5, 50, 50, Bithdc, 0, 0, 50, 50, RGB(0, 0, 0));
 	//W스킬
 	Rectangle(hdc, 660, PTOPWALL + 5, 710, PBOTTOMWALL - 5);
+	SelectObject(Bithdc, SKillWBit);
+	TransparentBlt(hdc, 660, PTOPWALL + 5, 50, 50, Bithdc, 0, 0, 50, 50, RGB(0, 0, 0));
 	//E스킬
 	Rectangle(hdc, 770, PTOPWALL + 5, 820, PBOTTOMWALL - 5);
+	SelectObject(Bithdc, SKillEBit);
+	TransparentBlt(hdc, 770, PTOPWALL + 5, 50, 50, Bithdc, 0, 0, 50, 50, RGB(0, 0, 0));
 
 	SelectObject(hdc, PlayerIFFont2);
-	SetTextColor(hdc, RGB(200, 200, 200));
+	SetTextColor(hdc, RGB(255, 255, 255));
 	SetBkMode(hdc, TRANSPARENT);
 
 	//체력 표시
@@ -301,30 +328,45 @@ void Player::PaintPlayerIF(HDC hdc, HDC Bithdc) const {
 	TextOut(hdc, 240, PTOPWALL + 15, str1, 9);
 
 	//Q스킬 쿨다운 표시
-	wchar_t str2[3];
-	swprintf_s(str2, L"%d%d", SkillQ / 10, SkillQ % 10);
-	TextOut(hdc, 560, PTOPWALL + 15, str2, 2);
+	wchar_t strQ[3];
+	swprintf_s(strQ, L"%d%d", SkillQ / 10, SkillQ % 10);
+	TextOut(hdc, 560, PTOPWALL + 15, strQ, 2);
 
-	TextOut(hdc, 670, PTOPWALL + 15, _T("40"), 2);
-	TextOut(hdc, 780, PTOPWALL + 15, _T("60"), 2);
+	//W스킬 쿨다운 표시
+	wchar_t strW[3];
+	swprintf_s(strW, L"%d%d", SkillW / 10, SkillW % 10);
+	TextOut(hdc, 670, PTOPWALL + 15, strW, 2);
+
+	//E스킬 쿨다운 표시
+	wchar_t strE[3];
+	swprintf_s(strE, L"%d%d", SkillE / 10, SkillE % 10);
+	TextOut(hdc, 780, PTOPWALL + 15, strE, 2);
 
 	SelectObject(hdc, OldPBrush);
 }
 
 
 void CreatePlayer(Player** player) {
+	PlayerIFBrush1 = CreateSolidBrush(RGB(0, 0, 0));
+	PlayerBrush1 = CreateSolidBrush(RGB(255, 216, 216));
+
+	PlayerPen1 = CreatePen(PS_SOLID, 1, RGB(204, 61, 61));
+
+	PlayerIFFont1 = CreateFontW(50, 15, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Algerian"));
+	PlayerIFFont2 = CreateFontW(30, 10, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
+
+	HealthBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+	SKillQBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillQ.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	SKillWBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillW.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	SKillEBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillE.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+	SkillEUseBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Shield.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+	
 	if (*player == NULL) {
 		//*player가 NULL일 경우 생성한다.
 		*player = new Player(640, 450, 100, 0, 0, 0, 0);
-
-		PlayerIFBrush1 = CreateSolidBrush(RGB(0, 0, 0));
-
-		PlayerPen1 = CreatePen(PS_SOLID, 1, RGB(204, 61, 61));
-
-		PlayerIFFont1 = CreateFontW(50, 15, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Algerian"));
-		PlayerIFFont2 = CreateFontW(30, 10, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
-
-		HealthBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 	}
 
 }

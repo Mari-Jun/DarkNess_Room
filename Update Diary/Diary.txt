@@ -64,3 +64,8 @@ LineEnemy 발사포 이미지 구현 완료
 Day18
 에너미 클래스 분리
 RectEnemy->AirEnemy로 변경
+
+
+Day19
+AirEnemy 구현
+SKillE 구현

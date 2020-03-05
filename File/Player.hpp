@@ -3,6 +3,7 @@
 
 static const double PI = 3.1415926535897;
 
+static HBRUSH PlayerBrush1;
 static HBRUSH PlayerIFBrush1;
 static HBRUSH OldPBrush;
 
@@ -13,6 +14,12 @@ static HFONT PlayerIFFont1;
 static HFONT PlayerIFFont2;
 
 static HBITMAP HealthBit;
+
+static HBITMAP SKillQBit;
+static HBITMAP SKillWBit;
+static HBITMAP SKillEBit;
+
+static HBITMAP SkillEUseBit;
 
 class Player {
 
@@ -31,7 +38,7 @@ public:
 	void MoveBottom();										//아래쪽으로 이동
 
 	void SetPoint(POINT* Pos, double Num) const;			//Pos[5] 세팅
-	void PaintPlayer(HDC hdc) const;						//Player 그리기
+	void PaintPlayer(HDC hdc, HDC Bithdc) const;			//Player 그리기
 
 	//인터페이스 관련
 	const int GetHealth() const;							//Health값을 반환한다.

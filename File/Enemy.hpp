@@ -150,7 +150,7 @@ int ChangeBInfo(BombEnemy** Benemy, Player* player);
 
 //유도 비행기 에너미
 
-static HBITMAP ABitmap[2];
+static HBITMAP ABitmap;
 static HBITMAP ASBitmap[11];
 
 static HBRUSH ABrush;
@@ -159,6 +159,9 @@ static HPEN APen;
 class AirEnemy : public MoveEnemy {
 public:
 	AirEnemy(int C, int D, int X, int Y, int DX, int DY);
+
+	const int GetDXPos() const;
+	const int GetDYPos() const;
 
 	void SetDropPos(Player* player);									//DXPos값과 DYPos값을 정한다.
 
@@ -172,12 +175,7 @@ private:
 	int DYPos;
 };
 
-
-
 void CreateAEnemy(AirEnemy** Aenemy);
 void DeleteAEnemy(AirEnemy** Aenemy);
-
-
-
-
-
+void SelectAShot(AirEnemy** Aenemy, Player* player);
+int ChangeAInfo(AirEnemy** Aenemy, Player* player);

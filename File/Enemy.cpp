@@ -716,20 +716,68 @@ AirEnemy::AirEnemy(int C, int D, int X, int Y, int DX, int DY) : MoveEnemy(C, D,
 
 }
 
+const int AirEnemy::GetDXPos() const {
+	//DXPos값을 반환한다.
+	return DXPos;	
+}
+
+const int AirEnemy::GetDYPos() const {
+	//DYPos값을 반환한다.
+	return DYPos;
+}
+
 void AirEnemy::SetDropPos(Player* player) {
 
 	//현재 플레이어가 있는 곳을 타격 위치로 설정한다.
-	DXPos = player->GetXPos();
-	DYPos = player->GetYPos();
+	DXPos = (player->GetXPos() - 120) / 60;
+	DYPos = (player->GetYPos() - 120) / 60;
+
+
+	//모서리에 있을 경우 폭파 범위 설정을 위해 DXPos값, DYPos값을 변경해준다.
+	if (DXPos == 0)
+		DXPos++;
+	if (DYPos == 0)
+		DYPos++;
+	if (DXPos == 19)
+		DXPos--;
+	if (DYPos == 19)
+		DYPos--;
+
+	//중간섬도 적용된다.
+	if (DXPos == 7 && DYPos > 7 && DYPos < 12)
+		DXPos--;
+	if (DXPos == 12 && DYPos > 7 && DYPos < 12)
+		DXPos++;
+	if (DYPos == 7 && DXPos > 7 && DXPos < 12)
+		DYPos--;
+	if (DYPos == 12 && DXPos > 7 && DXPos < 12)
+		DYPos++;
+	
 }
 
 
 void AirEnemy::SetHitCheck(Player* player, bool OnOff) const {
 
+	//HitCheck를 설정한다.
+
+	//HitCheck를 변경할 범위를 설정한다.
+	int Left, Right, Top, Bottom;
+	Left = DXPos - 1;
+	Right = DXPos + 1;
+	Top = DYPos - 1;
+	Bottom = DYPos + 1;
+
+	player->SetHitCheck(Left, Right, Top, Bottom, OnOff);
 }
 
 void AirEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
+	if (GetDelay() != 0) {
+		//발사 신호일 때 작동한다.
 
+		SelectObject(Bithdc, ABitmap);
+
+		TransparentBlt(hdc, GetXPos() - 30, GetYPos() - 30, 120, 120, Bithdc, 0, 0, 120, 120, RGB(255, 255, 255));
+	}
 }
 
 void AirEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
@@ -737,17 +785,20 @@ void AirEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 		//비행기가 출발했거나 폭탄이 터져있는 상태를 뜻한다.
 		if (GetCharging() == 0) {
 			//아직 터진 상태가 아닐때
-		}
-		else {
-			//터진 상태일때
 			OldEBrush = (HBRUSH)SelectObject(hdc, ABrush);
 			OldEPen = (HPEN)SelectObject(hdc, APen);
 
-
-
+			//3*3모양의 직사각형을 그린다.
+			Rectangle(hdc, LEFTWALL + (DXPos - 1) * 60, TOPWALL + (DYPos - 1) * 60, LEFTWALL + (DXPos + 2) * 60, TOPWALL + (DYPos + 2) * 60);
 
 			SelectObject(hdc, OldEBrush);
 			SelectObject(hdc, OldEPen);
+
+		}
+		else {
+			//터진 상태일때
+			SelectObject(Bithdc, ASBitmap[11 - GetCharging()]);
+			TransparentBlt(hdc, LEFTWALL + (DXPos - 1) * 60, TOPWALL + (DYPos - 1) * 60, 180, 180, Bithdc, 0, 0, 180, 180, RGB(255, 255, 255));
 		}
 	}
 }
@@ -755,13 +806,14 @@ void AirEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 void CreateAEnemy(AirEnemy** Aenemy) {
 
 	//AirEnemy를 불러온다.
-	for (int i = 0; i < 2; i++) {
-		wchar_t str[100];
-		swprintf_s(str, L".\\BitMap\\AirPlane%d.bmp", i);
-		ABitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-	}
-	//AirEnemy샷을 불러온다.
+	ABitmap = (HBITMAP)LoadImage(NULL, L".\\BitMap\\AirPlane1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
+	//AirEnemy샷을 불러온다.
+	for (int i = 0; i < 11; i++) {
+		wchar_t str[100];
+		swprintf_s(str, L".\\BitMap\\AirShot%d.bmp", i);
+		ASBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	}
 
 	ABrush = CreateHatchBrush(HS_FDIAGONAL, RGB(250, 237, 125));
 	APen = CreatePen(PS_SOLID, 1, RGB(232, 229, 109));
@@ -783,4 +835,71 @@ void DeleteAEnemy(AirEnemy** Aenemy) {
 			delete Aenemy[i];
 			Aenemy[i] = NULL;
 		}
+}
+
+void SelectAShot(AirEnemy** Aenemy, Player* player) {
+	while (1) {
+		int Num = rand() % AENEMYMAX;
+		if (Aenemy[Num]->GetDelay() == 0) {
+			//Delay가 0일경우만 실행한다.
+			//0이 아니면 이미 선택된 녀석이라 다시 선택하면 안되기 때문에
+
+			//Delay를 11으로 지정한다.
+			Aenemy[Num]->SetDelay(11);
+			//DropPos를 지정한다.
+			Aenemy[Num]->SetDropPos(player);
+
+			return;
+		}
+	}
+}
+
+int ChangeAInfo(AirEnemy** Aenemy, Player* player) {
+	//Benemy들을 검사해서 Delay값이 0이 아닌 녀석들 한해서 실행시킨다.
+
+	int Count = 0;
+
+	for (int i = 0; i < AENEMYMAX; i++) {
+		if (Aenemy[i]->ChangeDelay()) {
+			//ChangeDelay함수가 정상적으로 실행되었을 경우에만 실행한다.
+
+			//발사 대기중이거나 발사중임으로 Count를 1증가 시킨다.
+			Count++;
+
+			if (Aenemy[i]->GetCharging() == 0) {
+				//아직 폭파가 안된 상태
+
+				//비행기의 XPos값과 YPos값을 변경한다.
+				Aenemy[i]->ChangeXPos((LEFTWALL + Aenemy[i]->GetDXPos() * 60) / 10 * (11 - Aenemy[i]->GetDelay()));
+				Aenemy[i]->ChangeYPos(TOPWALL + Aenemy[i]->GetDYPos() * 60);
+	
+			}
+			else {
+				//폭파중인 상태
+
+				//비행기의 XPos값과 YPos값을 변경한다.
+				Aenemy[i]->ChangeXPos(LEFTWALL + Aenemy[i]->GetDXPos() * 60 + (ALLMAPX - (LEFTWALL + Aenemy[i]->GetDXPos() * 60)) / 10 * (11 - Aenemy[i]->GetCharging()));
+				Aenemy[i]->ChangeYPos(TOPWALL + Aenemy[i]->GetDYPos() * 60);
+			}
+
+			if (Aenemy[i]->GetCharging() == 11) {
+				//방금 충전이 됬을 경우
+				//SetHitCheck를 호출한다.
+				Aenemy[i]->SetHitCheck(player, true);
+			}
+
+			if (Aenemy[i]->ChangeCharging()) {
+				//ChangeCharging()이 true(발사 종료)를 반환했을 경우에만 실행한다.
+
+				//발사종료임으로 Count를 1감소 시킨다.
+				Count--;
+
+				//발사가 종료됬음으로
+				//SetHitCheck를 호출한다.
+				Aenemy[i]->SetHitCheck(player, false);
+			}
+		}
+	}
+	//Count값 (현재 실행되고 있는 LEnemy의 수)을 반환하여 LShot에게 적용시켜준다. 
+	return Count;
 }

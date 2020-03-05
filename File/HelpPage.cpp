@@ -52,9 +52,9 @@ void CreateHelpPage(HelpButton** Help) {
 		HelpPageFont3 = CreateFontW(50, 20, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
 
 		//HelpPage에 사용될 비트맵 이미지들을 생성한다.
-		ItemBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Item1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-		ItemBit2 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Item2.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-		ItemBit3 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Item3.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		ItemBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillQ.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		ItemBit2 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillW.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		ItemBit3 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillE.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 		HealtBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
 	}
