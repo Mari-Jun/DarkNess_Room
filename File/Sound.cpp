@@ -21,7 +21,7 @@ void SoundInit() {
 	
 }
 
-void PlayStartBKSound() {
+void PlayMainBKSound() {
 	//현재 Cahnnel0에 재생되는 음악을 정지한다.
 	FMOD_Channel_Stop(M_Channel[0]);
 	//배경 음악 Sound0를 재생한다.
@@ -30,7 +30,7 @@ void PlayStartBKSound() {
 
 void PlayGameBKSound() {
 	//현재 Cahnnel0,1에 재생되는 음악을 정지한다.
-	StartPageSoundStop();
+	MainPageSoundStop();
 	//배경 음악 Sound1를 재생한다.
 	FMOD_System_PlaySound(M_System, M_Sound[1], NULL, FALSE, &M_Channel[0]);
 
@@ -47,7 +47,7 @@ void PlayButtonClickSound(){
 	FMOD_System_PlaySound(M_System, M_Sound[3], NULL, FALSE, &M_Channel[2]);
 }
 
-void StartPageSoundStop() {
+void MainPageSoundStop() {
 	FMOD_Channel_Stop(M_Channel[0]);
 	FMOD_Channel_Stop(M_Channel[1]);
 }

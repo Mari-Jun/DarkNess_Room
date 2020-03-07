@@ -78,15 +78,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static HBITMAP Bitmap, OldBitmap;
 
 	//StartPage를 위한 비트맵 1 : 배경 이미지, 2 : 텍스트
-	static HBITMAP StartPageBit1, StartPageBit2;
+	static HBITMAP MainPageBit1, MainPageBit2;
 
 	//GamePlay페이지를 위한 비트맵
 	static HBITMAP GamePlayBit1, OldGamePlayBit1, GamePlayBit2, OldGamePlayBit2 ,GamePlayBit3, OldGamePlayBit3;
 
 	//클래스 객체들
 	static Player* player;
-	static ClickButton* Click;
-	static HelpButton* Help = NULL;
+	static MainPage* Main;
+	static HelpPage* Help = NULL;
 	static Camera* camera;
 	static Interface* Inter;
 	static LineEnemy* LEnemy[LENEMYMAX];
@@ -103,17 +103,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//로딩 페이지 구현에 사용되는 변수들
 	static int LoadingCount = 0, LightCount = 0;
 
-	//StartPage가 생성을 알려주는 변수
-	static bool StartCreate = false;
+	//MainPage가 생성을 알려주는 변수
+	static bool MainCreate = false;
 
 	//StartPage 페이드 구현시 필요한 변수
-	static int StartBitPade = 0, StartTextPade = 0;
+	static int MainBitPade = 0, MainTextPade = 0;
 
 	//GamePage시작시 효과 구현을 위해 필요한 변수
 	static int GamePageLoading = 0;
 
 	//GameTime을 나타내는 변수
-	static int GameTime = 0;
+	static int PlayerTime = 0, EnemyTime = 0;
 
 	//현재 에너미별 발사 된 수
 	static int LShot = 0, BShot = 0, AShot = 0;
@@ -155,17 +155,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	case WM_LBUTTONUP:
 		Mx = LOWORD(lParam);
 		My = HIWORD(lParam);
-		if (StartCreate) {
+		if (MainCreate) {
 			if (Page == 1) {
-				Page = ChangeStartPage(Click, My, Mx);
+				Page = Main->ChangeMainPage(My, Mx);
 				if (Page == 2) {
 					//Page2는 HelpPage이다.
 
 					//버튼 클릭 사운드 재생
 					PlayButtonClickSound();
 
-					//StartPage 삭제
-					DeleteStartPage(&Click);
+					//MainPage 삭제
+					DeleteMainPage(&Main);
 
 					//HelpPage 생성
 					CreateHelpPage(&Help);
@@ -178,32 +178,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 					Page = 1;
 
-					//StartCreate역시 페이드 아웃 구현을 위해서 false로 바꿔준다.
-					StartCreate = false;
+					//MainCreate역시 페이드 아웃 구현을 위해서 false로 바꿔준다.
+					MainCreate = false;
 
-					//StartBitPade와 StartTextPade가 번개효과 등으로 Pade값이 17이 아닐 경우를 대비하여 17로 만들어준다.
-					StartBitPade = 17;
-					StartTextPade = 17;
+					//MainBitPade와 MainTextPade가 번개효과 등으로 Pade값이 17이 아닐 경우를 대비하여 17로 만들어준다.
+					MainBitPade = 17;
+					MainTextPade = 17;
 
 					//번개 타이머 제거
 					KillTimer(hwnd, 3);
 
-					//StartPage 페이드 아웃 타이머 생성
+					//MainPage 페이드 아웃 타이머 생성
 					//GamePageLoading 타이머이기도 함
 					SetTimer(hwnd, 4, 10, NULL);
 				}
 				else if (Page == 4) {
 					//종료
-					DeleteStartPage(&Click);
+					DeleteMainPage(&Main);
 					exit(0);
 				}
 			}
 			else if (Page == 2) {
-				Page = ChangeHelpPage(Help, My, Mx);
+				Page = Help->ChangeHelpPage(My, Mx);
 				if (Page == 1) {
 					PlayButtonClickSound();
 					DeleteHelpPage(&Help);
-					CreateStartPage(&Click);
+					CreateMainPage(&Main);
 				}
 			}
 		}
@@ -211,14 +211,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	case WM_LBUTTONDOWN:
 		Mx = LOWORD(lParam);
 		My = HIWORD(lParam);
-		if (StartCreate) {
+		if (MainCreate) {
 			if (Page == 1) {
-				//StartPage에서의 마우스 왼쪽 클릭
-				StartClickCheck(Click, My, Mx);
+				//MainPage에서의 마우스 왼쪽 클릭
+				Main->MainClickCheck(My, Mx);
 			}
 			else if (Page == 2) {
 				//HelpPage에서의 마우스 왼쪽 클릭
-				HelpClickCheck(Help, My, Mx);
+				Help->HelpClickCheck(My, Mx);
 			}
 		}
 		break;
@@ -226,12 +226,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		Mx = LOWORD(lParam);
 		My = HIWORD(lParam);
 		if (Page == 1) {
-			//StartPage에서의 마우스 이동
-			MouseUpCheck(Click, My, Mx);
+			//MainPage에서의 마우스 이동
+			Main->MouseUpCheck(My, Mx);
 		}
 		else if (Page == 2) {
 			//HelpPage에서의 마우스 이동
-			MouseUpCheck(Help, My, Mx);
+			Help->MouseUpCheck(My, Mx);
 		}
 		break;
 	case WM_TIMER:
@@ -248,21 +248,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//Loading 타이머 삭제
 				KillTimer(hwnd, 1);
 		
-				//StartPage 페이드 타이머 생성
+				//MainPage 페이드 타이머 생성
 				SetTimer(hwnd, 2, 40, NULL);
 
-				//StartPage생성				
+				//MainPage생성				
 				Page = 1;
-				CreateStartPage(&Click);
+				CreateMainPage(&Main);
 
-				//StartPage에서 필요한 HDC, BITMAP들 생성
+				//MainPage에서 필요한 HDC, BITMAP들 생성
 				hdc = GetDC(hwnd);
 
-				//StartPageBit1 = 비트맵
-				StartPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\StartBackGround.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+				//MainPageBit1 = 비트맵
+				MainPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\StartBackGround.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
-				//StartPageBit2 = 그 이외의 것들
-				StartPageBit2 = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
+				//MainPageBit2 = 그 이외의 것들
+				MainPageBit2 = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
 
 				//Startdc1 = 비트맵
 				Startdc1 = CreateCompatibleDC(hdc);
@@ -272,39 +272,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//HelpPage에서 필요한 HDC, BITMAP들 생성
 				Helpdc1 = CreateCompatibleDC(hdc);
 
-				SelectObject(Startdc1, StartPageBit1);
-				SelectObject(Startdc2, StartPageBit2);
+				SelectObject(Startdc1, MainPageBit1);
+				SelectObject(Startdc2, MainPageBit2);
 
 				//텍스트의 배경을 투명한 색으로 지정함.
 				SetBkMode(Startdc2, TRANSPARENT);
 
 				ReleaseDC(hwnd, hdc);
 			}
-			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		case 2:
 			//StartPage화면 페이드 시작
-			if (StartBitPade < 17)
-				StartBitPade++;
-			if (StartBitPade >= 10) {
+			if (MainBitPade < 17)
+				MainBitPade++;
+			if (MainBitPade >= 10) {
 				//StartPage글자 페이드 시작
-				StartTextPade++;
-				if (StartTextPade == 17) {
+				MainTextPade++;
+				if (MainTextPade == 17) {
 	
 					//배경 BGM 재생
-					PlayStartBKSound();
+					PlayMainBKSound();
 
 					//StartPage페이드가 완료되었으니 StartCreate를 true로 바꿔준다.
-					StartCreate = true;
+					MainCreate = true;
 
-					//StartPage 페이드 타이머 제거
+					//MainPage 페이드 타이머 제거
 					KillTimer(hwnd, 2);
 
 					//번개 효과를 위한 깜빡임 타이머 생성
 					SetTimer(hwnd, 3, 10, NULL);
 				}
 			}
-			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		case 3:
 			if (LightCount == 0) 
@@ -313,27 +311,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			LightCount++;
 			//천둥소리 날 때를 뜻함
 			if (LightCount == 12 || LightCount == 30) {
-				StartBitPade = 13;
+				MainBitPade = 13;
 			}
 			if (LightCount == 15 || LightCount == 33) {
-				StartBitPade = 17;
+				MainBitPade = 17;
 			}
 			//사운드가 루프를 돌때를 뜻함
 			if (LightCount == 450) {
 				LightCount = 0;
 			}
-			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		case 4:
 			if (Page == 1) {
 				//StartPage 화면 페이드 구현을 위해 Page가 1인 상태임
 				//StartPage 화면 페이드 아웃 시작
-				StartBitPade--;
-				StartTextPade--;
+				MainBitPade--;
+				MainTextPade--;
 
-				if ((StartBitPade == 0) && (StartTextPade == 0)) {
-					//StartPage 삭제
-					DeleteStartPage(&Click);
+				if ((MainBitPade == 0) && (MainTextPade == 0)) {
+					//MainPage 삭제
+					DeleteMainPage(&Main);
 
 					//LoadingCount를 0으로 초기화 
 					LoadingCount = 0;
@@ -351,14 +348,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			if (Page == 3) {
 				if (LoadingCount == 0) {
 					//모든 사운드 제거
-					StartPageSoundStop();
+					MainPageSoundStop();
 
 					//LoadingPage생성
 					CreateLoadingPage();
 
-					//StartPage에서 사용된 HDC, BITMAP들 삭제
-					DeleteObject(StartPageBit1);
-					DeleteObject(StartPageBit2);
+					//MainPage에서 사용된 HDC, BITMAP들 삭제
+					DeleteObject(MainPageBit1);
+					DeleteObject(MainPageBit2);
 					DeleteDC(Startdc1);
 					DeleteDC(Startdc2);
 					DeleteDC(Helpdc1);
@@ -418,68 +415,78 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//GamePageLoading타이머 제거
 					KillTimer(hwnd, 4);
 					//게임 Timer 생성
+					SetTimer(hwnd, 9, 10, NULL);
 					SetTimer(hwnd, 10, 10, NULL);
 				}
 			}
-			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
-		case 10:
-			//Start버튼을 눌렀을때 작동한다.
+		case 9:
+			//플레이어 타이머
 
 			//플레이어 이동 함수 호출
 			player->MoveBasic();
 			//카메라 이동 함수 호출
-			camera->CameraMove(player);		
+			camera->CameraMove(player);
+
+			PlayerTime++;
+			if (PlayerTime == 7) {
+				//게임시간 기준 0.1초
+				//0.1초마다 Loop를 돌 수 있게 0으로 재설정.
+
+				PlayerTime = 0;
+
+				//플레이어가 적의 공격에 맞았는지 확인한다.
+				player->CheckHitCheck();
+
+				//플레이어 스킬 쿨다운을 업데이트한다.
+				player->SkillCoolDown(hwnd);
+			}
+			break;
+		case 10:
+			//에너미 타이머
 
 			//레벨에 따른 세팅 구현할 차례입니당!
 			switch (Inter->GetLevel()) {
 			case 1:
 				//직선포 최대 20개
 				LMaxShot = 20;
-				BMaxShot = 1;
-				AMaxShot = 1;
+				BMaxShot = 5;
+				AMaxShot = 2;
 				break;
 			}
 
-			GameTime++;
-			if (GameTime == 7) {
+			EnemyTime++;
+			if (EnemyTime == 7) {
 				//게임시간 기준 0.1초
 				//0.1초마다 Loop를 돌 수 있게 0으로 재설정.
-				GameTime = 0;
+				EnemyTime = 0;
 
 				//에너미 관련
 
 				//LineEnmey
 				for (LShot; LShot < LMaxShot; LShot++) {
-					SelectLShot(LEnemy);
+					SelectLShot(LEnemy, 1);
 				}
 				LShot = ChangeLInfo(LEnemy, player);
 
 				//WideEnemy
-				ChangeWInfo(WEnemy, player);
+				ChangeWInfo(WEnemy, player, 40);
 
 				//BombEnemy;
 				for (BShot; BShot < BMaxShot; BShot++) {
-					SelectBShot(BEnemy);
+					SelectBShot(BEnemy, 10);
 				}
 				BShot = ChangeBInfo(BEnemy, player);
 
 				//AirEnemy
 				for (AShot; AShot < AMaxShot; AShot++) {
-					SelectAShot(AEnemy, player);
+					SelectAShot(AEnemy, player, 20);
 				}
 				AShot = ChangeAInfo(AEnemy, player);
-
-				//플레이어가 적의 공격에 맞았는지 확인한다.
-				player->CheckHitCheck();
-
-				//플레이어 스킬 쿨다운을 업데이트한다.
-				player->SkillCoolDown();
 			}
-			InvalidateRgn(hwnd, NULL, FALSE);
 			break;
 		}
-		//InvalidateRgn(hwnd, NULL, FALSE);
+		InvalidateRgn(hwnd, NULL, FALSE);
 		FMOD_System_Update(M_System);
 		break;
 	case WM_PAINT:
@@ -494,8 +501,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		}
 		else if (Page == 1 || Page == 2) {
 			
-			//StartCreate가 True라면 StartPage가 완성된 상태이고 False라면 페이드 아웃, 페이드 인등 미완성된 상태이다.
-			if(StartCreate)
+			//MainCreate가 True라면 MainPage가 완성된 상태이고 False라면 페이드 아웃, 페이드 인등 미완성된 상태이다.
+			if(MainCreate)
 				PatBlt(mem1dc, 0, 0, ScreenX, ScreenY, WHITENESS);
 
 		
@@ -504,7 +511,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			bf1.AlphaFormat = AC_SRC_ALPHA;
 			bf1.BlendOp = AC_SRC_OVER;
 			bf1.BlendFlags = 0;
-			bf1.SourceConstantAlpha = StartBitPade * 15;
+			bf1.SourceConstantAlpha = MainBitPade * 15;
 			
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
 			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Startdc1, 0, 0,ScreenX, ScreenY, bf1);
@@ -514,10 +521,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//Startdc2에 Page들을 Paint한다.
 			if (Page == 1) {
-				PaintStartPage(Startdc2, Click);
+				Main->PaintMainPage(Startdc2);
 			}
 			else {
-				PaintHelpPage(Startdc2, Helpdc1, Help);
+				Help->PaintHelpPage(Startdc2, Helpdc1);
 			}
 
 			//알파블렌딩 (투명화)를 위한 작업
@@ -525,7 +532,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			bf2.AlphaFormat = 0;
 			bf2.BlendOp = AC_SRC_OVER;
 			bf2.BlendFlags = 0;
-			bf2.SourceConstantAlpha = StartTextPade * 15;
+			bf2.SourceConstantAlpha = MainTextPade * 15;
 
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
 			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Startdc2, 0, 0, ScreenX, ScreenY, bf2);

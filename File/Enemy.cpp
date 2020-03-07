@@ -138,7 +138,7 @@ void LineEnemy::SetRange() {
 	}
 }
 
-void LineEnemy::SetHitCheck(Player* player, bool OnOff) const {
+void LineEnemy::SetHitCheck(Player* player, const bool OnOff) const {
 	//HitCheck를 설정한다.
 
 	//HitCheck를 변경할 범위를 설정한다.
@@ -177,7 +177,7 @@ void LineEnemy::SetHitCheck(Player* player, bool OnOff) const {
 
 void LineEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 
-	if (GetDelay() != 0) {
+	if (GetDelay() > 0 && GetDelay() < 12) {
 		if (abs(Direction) == 1) {
 			if (Direction == 1)
 				SelectObject(Bithdc, LBitMap[0]);
@@ -198,7 +198,7 @@ void LineEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 
 void LineEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 
-	if (GetDelay() != 0) {
+	if (GetDelay() > 0 && GetDelay() < 12) {
 		//발사 시작 시간이 0이 아닐때 
 		if (GetCharging() != 0) {
 			//발사 중일때 
@@ -306,7 +306,7 @@ void DeleteLEnemy(LineEnemy** Lenemy) {
 	}
 }
 
-void SelectLShot(LineEnemy** Lenemy) {
+void SelectLShot(LineEnemy** Lenemy, const int WaitTime) {
 	//LineEnemy인 0~79중 1개를 선택한다.
 	while (1) {
 		int Num = rand() % LENEMYMAX;
@@ -315,7 +315,7 @@ void SelectLShot(LineEnemy** Lenemy) {
 			//0이 아니면 이미 선택된 녀석이라 다시 선택하면 안되기 때문에
 
 			//Delay를 11으로 지정한다.
-			Lenemy[Num]->SetDelay(11);
+			Lenemy[Num]->SetDelay(rand() % WaitTime + 11);
 			//Range를 지정한다.
 			Lenemy[Num]->SetRange();
 
@@ -377,7 +377,7 @@ void WideEnemy::SetDirection() {
 	Direction = rand() % 4 + 1;
 }
 
-void WideEnemy::SetHitCheck(Player* player, bool OnOff) const {
+void WideEnemy::SetHitCheck(Player* player, const bool OnOff) const {
 	//HitCheck를 설정한다.
 
 	//HitCheck를 변경할 범위를 설정한다.
@@ -405,7 +405,7 @@ void WideEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 }
 
 void WideEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
-	if (GetDelay() != 0) {
+	if (GetDelay() > 0 && GetDelay() < 12) {
 		//발사 중이거나 발사 대기중일때 작동
 		if (GetCharging() == 0) {
 			//발사 대기중이라면
@@ -506,23 +506,13 @@ void DeleteWEnemy(WideEnemy** Wenemy) {
 	}
 }
 
-void ChangeWInfo(WideEnemy* Wenemy, Player* player) {
-	static int Wait = 0;
+void ChangeWInfo(WideEnemy* Wenemy, Player* player, const int WaitTime) {
+
 	if (Wenemy->GetDelay() == 0) {
-		//Delay가 0인 상태인 경우
-		Wait++;
-		if (Wait == 40) {
-			//발사 쿨다운 설정
-			//즉 4초+1초마다 발사된다.
-			
 			//방향 선택
 			Wenemy->SetDirection();
 			//발사 대기 시간 설정
-			Wenemy->SetDelay(11);
-
-			//다시 쿨다운을 돌리기 위해 0으로 설정
-			Wait = 0;
-		}
+			Wenemy->SetDelay(WaitTime + 11);
 	}
 	else {
 		//발사 대기중이거나 발사중인 경우
@@ -553,7 +543,7 @@ BombEnemy::BombEnemy(int C, int D, int X, int Y) : MoveEnemy(X, Y, C, D){
 
 }
 
-void BombEnemy::SetHitCheck(Player* player, bool OnOff) const {
+void BombEnemy::SetHitCheck(Player* player, const bool OnOff) const {
 	//HitCheck를 설정한다.
 
 	//HitCheck를 변경할 범위를 설정한다.
@@ -585,7 +575,7 @@ void BombEnemy::SetDropPos() {
 
 void BombEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 	//BombEnemy를 그린다.
-	if (GetDelay() != 0) {
+	if (GetDelay() > 0 && GetDelay() < 12) {
 		//폭탄이 떨어진 상태
 
 		if (GetCharging() == 0) {
@@ -598,8 +588,9 @@ void BombEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 }
 
 void BombEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
-	if (GetDelay() != 0) {
+	if (GetDelay() > 0 && GetDelay() < 12) {
 		//폭탄이 떨어진 후를 뜻함.
+		//Delay12 이하인 이유는 불규칙 적인 폭탄을 구현하고 싶어서 저렇게 설정해주었다.
 
 		//Brush와 Pen 선택
 		OldEBrush = (HBRUSH)SelectObject(hdc, BBrush);
@@ -657,18 +648,18 @@ void DeleteBEnemy(BombEnemy** Benemy) {
 	}
 }
 
-void SelectBShot(BombEnemy** Benemy) {
+void SelectBShot(BombEnemy** Benemy, const int WaitTime) {
+
 	while (1) {
 		int Num = rand() % BENEMYMAX;
 		if (Benemy[Num]->GetDelay() == 0) {
 			//Delay가 0일경우만 실행한다.
 			//0이 아니면 이미 선택된 녀석이라 다시 선택하면 안되기 때문에
 
-			//Delay를 11으로 지정한다.
-			Benemy[Num]->SetDelay(11);
+			//최소 11  최대 11 + WaitTime만큼의 범위
+			Benemy[Num]->SetDelay(rand() % WaitTime + 11);
 			//DropPos를 지정한다.
 			Benemy[Num]->SetDropPos();
-
 			return;
 		}
 	}
@@ -756,7 +747,7 @@ void AirEnemy::SetDropPos(Player* player) {
 }
 
 
-void AirEnemy::SetHitCheck(Player* player, bool OnOff) const {
+void AirEnemy::SetHitCheck(Player* player, const bool OnOff) const {
 
 	//HitCheck를 설정한다.
 
@@ -771,7 +762,7 @@ void AirEnemy::SetHitCheck(Player* player, bool OnOff) const {
 }
 
 void AirEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
-	if (GetDelay() != 0) {
+	if (GetDelay() > 0 && GetDelay() < 12) {
 		//발사 신호일 때 작동한다.
 
 		SelectObject(Bithdc, ABitmap);
@@ -781,7 +772,7 @@ void AirEnemy::PaintEnmey(HDC hdc, HDC Bithdc) const {
 }
 
 void AirEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
-	if (GetDelay() != 0) {
+	if (GetDelay() > 0 && GetDelay() < 12) {
 		//비행기가 출발했거나 폭탄이 터져있는 상태를 뜻한다.
 		if (GetCharging() == 0) {
 			//아직 터진 상태가 아닐때
@@ -837,17 +828,15 @@ void DeleteAEnemy(AirEnemy** Aenemy) {
 		}
 }
 
-void SelectAShot(AirEnemy** Aenemy, Player* player) {
+void SelectAShot(AirEnemy** Aenemy, Player* player, const int WaitTime) {
 	while (1) {
 		int Num = rand() % AENEMYMAX;
 		if (Aenemy[Num]->GetDelay() == 0) {
 			//Delay가 0일경우만 실행한다.
 			//0이 아니면 이미 선택된 녀석이라 다시 선택하면 안되기 때문에
 
-			//Delay를 11으로 지정한다.
-			Aenemy[Num]->SetDelay(11);
-			//DropPos를 지정한다.
-			Aenemy[Num]->SetDropPos(player);
+			//최소 11 최대 11+ WaitTime만큼의 범위
+			Aenemy[Num]->SetDelay(rand() % WaitTime + 11);
 
 			return;
 		}
@@ -865,6 +854,13 @@ int ChangeAInfo(AirEnemy** Aenemy, Player* player) {
 
 			//발사 대기중이거나 발사중임으로 Count를 1증가 시킨다.
 			Count++;
+
+			if (Aenemy[i]->GetDelay() == 11) {
+				//발사 준비 완료 되었다면 즉 폭파범위가 나올때라면
+				//DropPos를 지정한다.
+				Aenemy[i]->SetDropPos(player);
+			}
+
 
 			if (Aenemy[i]->GetCharging() == 0) {
 				//아직 폭파가 안된 상태

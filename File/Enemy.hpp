@@ -19,7 +19,7 @@ public:
 	void SetDelay(int D);											//Delay값을 지정한다.
 	bool ChangeDelay();												//Delay값을 1씩 감소시킨다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff) const = 0;		//HitCheck를 설정한다.
+	virtual void SetHitCheck(Player* player, const bool OnOff) const = 0;		//HitCheck를 설정한다.
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const = 0;
 	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2S) const = 0;
@@ -77,7 +77,7 @@ public:
 
 	void SetRange();											//Range값을 정한다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff) const;
+	virtual void SetHitCheck(Player* player, const bool OnOff) const;
 		
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//직선포적 적을 그린다.
 	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;						//직선포적 포를 그린다.
@@ -88,7 +88,7 @@ private:
 
 void CreateLEnemy(LineEnemy** Lenemy);
 void DeleteLEnemy(LineEnemy** Lenemy);
-void SelectLShot(LineEnemy** Lenemy);
+void SelectLShot(LineEnemy** Lenemy, const int WaitTime);
 int ChangeLInfo(LineEnemy** Lenmey, Player* player);
 
 
@@ -104,13 +104,13 @@ static HPEN WSPen;
 
 class WideEnemy : public FixEnemy {
 public:
-	WideEnemy(int C, int D, int X, int Y, int Di);
+	explicit WideEnemy(int C, int D, int X, int Y, int Di);
 
 	const int GetDirection() const;								//Direction값 얻기
 
 	void SetDirection();										//Direction값을 정한다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff) const;
+	virtual void SetHitCheck(Player* player, const bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//광역포적 적을 그린다.
 	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;						//광역포적 포를 그린다.
@@ -120,7 +120,7 @@ private:
 
 void CreateWEnemy(WideEnemy** Wenemy);
 void DeleteWEnemy(WideEnemy** Wenemy);
-void ChangeWInfo(WideEnemy* WenemSy, Player* player);
+void ChangeWInfo(WideEnemy* WenemSy, Player* player, const int WaitTime);
 
 //폭탄 에너미
 
@@ -133,11 +133,11 @@ static HPEN BPen;
 
 class BombEnemy : public MoveEnemy {
 public:
-	BombEnemy(int C, int D, int X, int Y);
+	explicit BombEnemy(int C, int D, int X, int Y);
 
 	void SetDropPos();									//DXPos값과 DYPos값을 정한다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff) const;
+	virtual void SetHitCheck(Player* player, const bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;			//폭탄적 적을 그린다.
 	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;			//폭탄적 폭탄을 그린다.
@@ -145,7 +145,7 @@ public:
 
 void CreateBEnemy(BombEnemy** Benemy);
 void DeleteBEnemy(BombEnemy** Benemy);
-void SelectBShot(BombEnemy** Benemy);
+void SelectBShot(BombEnemy** Benemy, const int WaitTime);
 int ChangeBInfo(BombEnemy** Benemy, Player* player);
 
 //유도 비행기 에너미
@@ -158,14 +158,14 @@ static HPEN APen;
 
 class AirEnemy : public MoveEnemy {
 public:
-	AirEnemy(int C, int D, int X, int Y, int DX, int DY);
+	explicit AirEnemy(int C, int D, int X, int Y, int DX, int DY);
 
 	const int GetDXPos() const;
 	const int GetDYPos() const;
 
 	void SetDropPos(Player* player);									//DXPos값과 DYPos값을 정한다.
 
-	virtual void SetHitCheck(Player* player, bool OnOff) const;
+	virtual void SetHitCheck(Player* player, const bool OnOff) const;
 
 	virtual void PaintEnmey(HDC hdc, HDC Bithdc) const;					//유도 비행기를 그린다.
 	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;		//유도 비행기포를 그린다.
@@ -177,5 +177,5 @@ private:
 
 void CreateAEnemy(AirEnemy** Aenemy);
 void DeleteAEnemy(AirEnemy** Aenemy);
-void SelectAShot(AirEnemy** Aenemy, Player* player);
+void SelectAShot(AirEnemy** Aenemy, Player* player, const int WaitTime);
 int ChangeAInfo(AirEnemy** Aenemy, Player* player);

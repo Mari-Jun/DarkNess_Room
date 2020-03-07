@@ -70,7 +70,7 @@ void Player::MoveBottom() {
 		YPos -= 10;
 }
 
-void Player::SetPoint(POINT* Pos, double Num) const{
+void Player::SetPoint(POINT* Pos, const double Num) const{
 	double Rad1 = Num * (PI / 180);
 	double Rad2 = (Num + 45.00) * (PI / 180);
 	double Rad3 = (Num + 135.00) * (PI / 180);
@@ -205,7 +205,7 @@ void Player::UseSkill(WPARAM wParam) {
 	}
 }
 
-void Player::SkillCoolDown() {
+void Player::SkillCoolDown(HWND hwnd) {
 	static int Count = 0;
 
 	//0.1초(게임시간)당 1씩 증가
@@ -219,8 +219,18 @@ void Player::SkillCoolDown() {
 			SkillQ--;
 		
 		//SkillW 쿨다운이 0보다 크면 1씩 감소
-		if (SkillW > 0)
+		if (SkillW > 0) {
+			if (SkillW == 30) {
+				//EnemyTimer 재설정
+				SetTimer(hwnd, 10, 20, NULL);
+			}
+			if (SkillW == 25) {
+				//EnemyTimer 재설정
+				SetTimer(hwnd, 10, 10, NULL);
+			}
 			SkillW--;
+		}
+			
 
 		//SkillE 쿨다운이 0보다 크면 1씩 감소
 		if (SkillE > 0)
@@ -239,7 +249,8 @@ void Player::UseSkillQ() {
 }
 
 void Player::UseSkillW() {
-
+	//SkillW 쿨다운 초기화
+	SkillW = 30;
 }
 
 void Player::UseSkillE() {
@@ -247,7 +258,7 @@ void Player::UseSkillE() {
 	SkillE = 60;
 }
 
-void Player::SetHitCheck(int Left, int Right, int Top, int Bottom, bool OnOff) {
+void Player::SetHitCheck(const int Left, const int Right, const int Top, const int Bottom, const bool OnOff) {
 	for (int x = Left; x <= Right; x++)
 		for (int y = Top; y <= Bottom; y++) {
 			if (OnOff)

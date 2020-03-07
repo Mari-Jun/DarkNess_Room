@@ -37,7 +37,7 @@ public:
 	void MoveTop();											//위쪽으로 이동	
 	void MoveBottom();										//아래쪽으로 이동
 
-	void SetPoint(POINT* Pos, double Num) const;			//Pos[5] 세팅
+	void SetPoint(POINT* Pos, const double Num) const;		//Pos[5] 세팅
 	void PaintPlayer(HDC hdc, HDC Bithdc) const;			//Player 그리기
 
 	//인터페이스 관련
@@ -47,12 +47,12 @@ public:
 	const int GetSkillE() const;							//SkillE값을 반환한다.
 
 	void UseSkill(WPARAM wParam);							//Skill 사용 관리
-	void SkillCoolDown();									//Skill 쿨다운 관리
+	void SkillCoolDown(HWND hwnd);							//Skill 쿨다운 관리
 	void UseSkillQ();										//SkillQ를 사용한다.
 	void UseSkillW();										//SkillW를 사용한다.
 	void UseSkillE();										//SkillE를 사용한다.
 
-	void SetHitCheck(int Left, int Right, int Top, int Bottom, bool OnOff);			//HitCheck를 세팅한다.
+	void SetHitCheck(const int Left, const int Right, const int Top, const int Bottom, const bool OnOff);		//HitCheck를 세팅한다.
 	void CheckHitCheck();									//HitCheck에 플레이어가 있는지 확인
 
 	void PaintPlayerIF(HDC hdc, HDC Bithdc) const;						//Player 인터페이스 그리기

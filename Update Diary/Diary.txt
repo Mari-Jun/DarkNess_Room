@@ -69,3 +69,14 @@ RectEnemy->AirEnemy로 변경
 Day19
 AirEnemy 구현
 SKillE 구현
+
+
+Day20
+프로젝트 휴식
+
+
+Day21
+HelpPage 추가
+SkillW 구현
+코드 정리
+에너미 발사 주기 불규칙적으로 나오게 변경
