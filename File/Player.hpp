@@ -55,6 +55,8 @@ public:
 	void SetHitCheck(const int Left, const int Right, const int Top, const int Bottom, const bool OnOff);		//HitCheck를 세팅한다.
 	void CheckHitCheck();									//HitCheck에 플레이어가 있는지 확인
 
+	const bool PlayerDie() const;
+
 	void PaintPlayerIF(HDC hdc, HDC Bithdc) const;						//Player 인터페이스 그리기
 
 

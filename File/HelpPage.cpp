@@ -115,7 +115,7 @@ void HelpPage::PaintHelpPage(HDC hdc, HDC Bithdc) const {
 		TextOut(hdc, 200, 290, _T("Enemy1 : "), 9);
 		TextOut(hdc, 500, 290, _T("Straight Gun [Range 1*5~20]"), 27);
 		TextOut(hdc, 200, 400, _T("Enemy2 : "), 9);
-		TextOut(hdc, 500, 400, _T("Broad Area Gun [Range 10*10]"), 28);
+		TextOut(hdc, 500, 400, _T("Broad Area Light [Range 10*10]"), 30);
 		TextOut(hdc, 200, 510, _T("Enemy3 : "), 9);
 		TextOut(hdc, 500, 510, _T("Random Bomb [Range 5*5]"), 23);
 		TextOut(hdc, 200, 620, _T("Enemy4 : "), 9);

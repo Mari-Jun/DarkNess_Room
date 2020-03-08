@@ -8,18 +8,17 @@
 #include "CreditPage.hpp"
 #include "Camera.hpp"
 #include "Enemy.hpp"
+#include "RankPage.hpp"
+#include "LevelSet.hpp"
 
 
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
-HINSTANCE StartPagehInst;
-
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
 	HWND hwnd1;
 	WNDCLASS WndClass1;
 	MSG msg;
-	StartPagehInst = hInstance;
 
 	WndClass1.style = CS_HREDRAW | CS_VREDRAW;
 	WndClass1.lpfnWndProc = WndProc;
@@ -83,6 +82,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//GamePlay페이지를 위한 비트맵
 	static HBITMAP GamePlayBit1, OldGamePlayBit1, GamePlayBit2, OldGamePlayBit2 ,GamePlayBit3, OldGamePlayBit3;
 
+	//GamePlay페이지를 위한 폰트
+	static HFONT GamePlayFont;
+
 	//클래스 객체들
 	static Player* player;
 	static MainPage* Main;
@@ -95,7 +97,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static AirEnemy* AEnemy[AENEMYMAX];
 
 	//마우스 좌표
-	int Mx, My;
+	static int Mx, My;
 
 	//게임 페이지
 	static int Page = 0;
@@ -112,15 +114,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//GamePage시작시 효과 구현을 위해 필요한 변수
 	static int GamePageLoading = 0;
 
-	//GameTime을 나타내는 변수
-	static int PlayerTime = 0, EnemyTime = 0;
-
 	//현재 에너미별 발사 된 수
 	static int LShot = 0, BShot = 0, AShot = 0;
 
 	//최대 에너미별 발사 수
-	static int LMaxShot = 0, BMaxShot = 0, AMaxShot = 0;
+	static int LMaxShot = 0, WMaxShot = 0, BMaxShot = 0, AMaxShot = 0;
 
+	//알파블렌딩
+	static BLENDFUNCTION bf1, bf2;
+
+	static int LevelTime = 0;
 
 	switch (iMsg)
 	{
@@ -279,6 +282,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				SetBkMode(Startdc2, TRANSPARENT);
 
 				ReleaseDC(hwnd, hdc);
+
+				//알파블렌딩에 필요한 객체들 초기화
+				bf1.AlphaFormat = AC_SRC_ALPHA;
+				bf1.BlendOp = AC_SRC_OVER;
+				bf1.BlendFlags = 0;
+
+				bf2.AlphaFormat = 0;
+				bf2.BlendOp = AC_SRC_OVER;
+				bf2.BlendFlags = 0;
 			}
 			break;
 		case 2:
@@ -399,9 +411,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					GamePlayBit2 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
 					GamePlayBit3 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
 
+					GamePlayFont = CreateFontW(240, 60, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Vladimir Script"));
+
 					SelectObject(Gamedc1, GamePlayBit1);
 					SelectObject(Gamedc2, GamePlayBit2);
 					SelectObject(Gamedc3, GamePlayBit3);
+
+					SelectObject(mem1dc, GamePlayFont);
 
 					ReleaseDC(hwnd, hdc);
 				}
@@ -415,53 +431,104 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//GamePageLoading타이머 제거
 					KillTimer(hwnd, 4);
 					//게임 Timer 생성
+					SetTimer(hwnd, 8, 100, NULL);
 					SetTimer(hwnd, 9, 10, NULL);
-					SetTimer(hwnd, 10, 10, NULL);
+					SetTimer(hwnd, 10, 100, NULL);
 				}
 			}
 			break;
+		case 5:
+			//플레이어가 죽었을때 실행되는 타이머
+
+			GamePageLoading -= 5;
+			//게임 페이지를 닫는 이펙트를 구현한다.
+
+			if (GamePageLoading == 0) {
+				//GamePageLoading이 0이 된다면 모든 게임 페이지가 지워졌음으로
+				//타이머 실행 중지
+				KillTimer(hwnd, 5);
+
+				//GamePage에서 생성된 객체들 모두 삭제
+				//Interface는 제외 RankPage에서도 사용됨
+
+				//게임 BGM을 실행한다.
+				//PlayGameBKSound();
+
+				//플레이어 제거
+				DeletePlayer(&player);
+
+				//카메라 제거
+				DeleteCamera(&camera);
+
+				//적 제거
+				DeleteLEnemy(LEnemy);
+				DeleteWEnemy(&WEnemy);
+				DeleteBEnemy(BEnemy);
+				DeleteAEnemy(AEnemy);
+
+				//GamePage를 위한 HDC, BITMAP들 제거
+				DeleteDC(Gamedc1);
+				DeleteDC(Gamedc2);
+				DeleteDC(Gamedc3);
+				DeleteObject(GamePlayBit1);
+				DeleteObject(GamePlayBit2);
+				DeleteObject(GamePlayBit3);
+
+				//Page RankPage인 5로 변경
+				Page = 5;
+
+				//ScoreRankTimer실행
+				SetTimer(hwnd, 6, 10, NULL);
+			}
+			break;
+		case 6:
+			//ScoreRankTimer
+			
+
+			break;
+		case 8:
+			//플레이어 인터페이스 타이머
+
+			//Level을 때가 되면 변경해준다.
+			LevelTime++;
+			if (LevelTime == 510) {
+				//게임시간 기준 50초
+				//+ Level표시 시간 1초
+				//Time을 0으로 초기화
+				LevelTime = 0;
+				Inter->ChangeLevel();
+			}
+
+			//플레이어의 체력을 확인
+			if (player->PlayerDie()) {
+				//체력이 0이라면
+				KillTimer(hwnd, 8);
+				KillTimer(hwnd, 9);
+				KillTimer(hwnd, 10);
+				SetTimer(hwnd, 5, 10, NULL);
+			}
+
+			//플레이어 스킬 쿨다운을 업데이트한다.
+			player->SkillCoolDown(hwnd);
+			break;
 		case 9:
-			//플레이어 타이머
+			//플레이어 이동 타이머
 
 			//플레이어 이동 함수 호출
 			player->MoveBasic();
 			//카메라 이동 함수 호출
 			camera->CameraMove(player);
 
-			PlayerTime++;
-			if (PlayerTime == 7) {
-				//게임시간 기준 0.1초
-				//0.1초마다 Loop를 돌 수 있게 0으로 재설정.
-
-				PlayerTime = 0;
-
-				//플레이어가 적의 공격에 맞았는지 확인한다.
-				player->CheckHitCheck();
-
-				//플레이어 스킬 쿨다운을 업데이트한다.
-				player->SkillCoolDown(hwnd);
-			}
 			break;
 		case 10:
 			//에너미 타이머
 
-			//레벨에 따른 세팅 구현할 차례입니당!
-			switch (Inter->GetLevel()) {
-			case 1:
-				//직선포 최대 20개
-				LMaxShot = 20;
-				BMaxShot = 5;
-				AMaxShot = 2;
-				break;
-			}
+			//레벨에 따른 세팅을 한다.
+			LevelSetting(Inter->GetLevel(), LMaxShot, WMaxShot, BMaxShot, AMaxShot);
 
-			EnemyTime++;
-			if (EnemyTime == 7) {
-				//게임시간 기준 0.1초
-				//0.1초마다 Loop를 돌 수 있게 0으로 재설정.
-				EnemyTime = 0;
-
-				//에너미 관련
+			if (LevelTime > 10) {
+				//LevelTime이 10이상일때 설정한다.
+				//LevelTime이 10이하일 경우는 인터페이스에 LEVEL표시를 그려준다. 즉 LEVEL당 텀이 있게 만든다.
 
 				//LineEnmey
 				for (LShot; LShot < LMaxShot; LShot++) {
@@ -470,7 +537,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				LShot = ChangeLInfo(LEnemy, player);
 
 				//WideEnemy
-				ChangeWInfo(WEnemy, player, 40);
+				if (WMaxShot == 1)
+					ChangeWInfo(WEnemy, player, 40);
 
 				//BombEnemy;
 				for (BShot; BShot < BMaxShot; BShot++) {
@@ -483,7 +551,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					SelectAShot(AEnemy, player, 20);
 				}
 				AShot = ChangeAInfo(AEnemy, player);
+
+				//플레이어가 적의 공격에 맞았는지 확인한다.
+				player->CheckHitCheck();
 			}
+
 			break;
 		}
 		InvalidateRgn(hwnd, NULL, FALSE);
@@ -497,20 +569,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		//mem1dc에 더블버퍼링으로 그려준다
 
 		if (Page == 0) {
-			PaintLoadingPage(mem1dc, LoadingCount);
+			//로딩 페이지 그리기
+			PaintLoadingPage(mem1dc, LoadingCount, Page);
 		}
 		else if (Page == 1 || Page == 2) {
+			//Page1 : MainPage, Page2 : HelpPage 그리기
 			
 			//MainCreate가 True라면 MainPage가 완성된 상태이고 False라면 페이드 아웃, 페이드 인등 미완성된 상태이다.
 			if(MainCreate)
 				PatBlt(mem1dc, 0, 0, ScreenX, ScreenY, WHITENESS);
-
 		
 			//알파블렌딩 (투명화)를 위한 작업
-			BLENDFUNCTION bf1;
-			bf1.AlphaFormat = AC_SRC_ALPHA;
-			bf1.BlendOp = AC_SRC_OVER;
-			bf1.BlendFlags = 0;
 			bf1.SourceConstantAlpha = MainBitPade * 15;
 			
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
@@ -528,22 +597,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			}
 
 			//알파블렌딩 (투명화)를 위한 작업
-			BLENDFUNCTION bf2;
-			bf2.AlphaFormat = 0;
-			bf2.BlendOp = AC_SRC_OVER;
-			bf2.BlendFlags = 0;
 			bf2.SourceConstantAlpha = MainTextPade * 15;
 
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
 			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Startdc2, 0, 0, ScreenX, ScreenY, bf2);
 		}
 		else if (Page == 3) {
-			PaintLoadingPage(mem1dc, LoadingCount * 2);
+			//GamePage 로딩 페이지 그리기
+			PaintLoadingPage(mem1dc, LoadingCount * 2, Page);
+		}
+		else if (Page == 5) {
+			//RankPage 그리기
+			PaintRankPage(mem1dc, Inter);
 		}
 		else if (Page == 10) {
-			
+			//GamePage 그리기
+
 			//Gamedc1에 GameMap을 그려준다.
 			Inter->PaintBackGround(Gamedc1, Gamedc2);			
+			Inter->PaintInterface(Gamedc1);
 
 			//발사체들을 Gamedc1에 그려준다.
 			for (int L = 0; L < LENEMYMAX; L++)
@@ -611,6 +683,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				else
 					//700이상이 되면 다 로딩이 됬기 떄문에 그냥 670의 크기만큼 복사한다.
 					BitBlt(mem1dc, 30, 30, 1220, 670, Gamedc1, camera->GetCLeft(), camera->GetCTop(), SRCCOPY);
+			}
+
+			if (LevelTime > 0 && LevelTime <= 10) {
+				//0초과 10이하일때
+				//LEVEL을 띄워준다.
+				wchar_t str[10];
+				swprintf_s(str, L"Level %d%d", Inter->GetLevel() / 10, Inter->GetLevel() % 10);
+				SetBkMode(mem1dc, TRANSPARENT);
+				SetTextColor(mem1dc, RGB(125, 0, 0));
+				TextOut(mem1dc, 360, 250, str, 8);
 			}
 		}
 		

@@ -1,28 +1,29 @@
 #pragma once
 #include <windows.h>
 
-static HBRUSH OldBackGroundBrush;
-
 static HPEN BackGroundPen1;
 static HPEN OldBackGroundPen;
+
+static HFONT InterfaceFont1;
 
 static HBITMAP BackGroundBit[4];
 
 class Interface {
 public:
-	Interface(int L, int P);
+	Interface(int L, int S);
 
 	const int GetLevel() const;			//Level값 반환
-	const int GetPercent() const;		//Percent값 반환
+	const int GetScore() const;			//Score값 반환
 
 	void ChangeLevel();					//Level 변환
-	void ChangePercent();				//Percent 변환
+	void ChangeScore();					//Percent 변환
 
+	void PaintInterface(HDC hdc);
 	void PaintBackGround(HDC hdc, HDC Bithdc);
 	void PaintBackGroundLine(HDC hdc);
 private:
 	int Level;
-	int Percent;
+	int Score;
 };
 
 void CreateInterface(Interface** inter);				//사용할 객체 초기화

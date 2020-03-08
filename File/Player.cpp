@@ -190,14 +190,17 @@ const int Player::GetSkillE() const {
 void Player::UseSkill(WPARAM wParam) {
 	switch (wParam) {
 	case 'q':
+	case 'Q':
 		if (GetSkillQ() == 0)
 			UseSkillQ();
 		break;
 	case 'w':
+	case 'W':
 		if (GetSkillW() == 0)
 			UseSkillW();
 		break;
 	case 'e':
+	case 'E':
 		if (GetSkillE() == 0)
 			UseSkillE();
 	default:
@@ -222,11 +225,11 @@ void Player::SkillCoolDown(HWND hwnd) {
 		if (SkillW > 0) {
 			if (SkillW == 30) {
 				//EnemyTimer 재설정
-				SetTimer(hwnd, 10, 20, NULL);
+				SetTimer(hwnd, 10, 200, NULL);
 			}
 			if (SkillW == 25) {
 				//EnemyTimer 재설정
-				SetTimer(hwnd, 10, 10, NULL);
+				SetTimer(hwnd, 10, 100, NULL);
 			}
 			SkillW--;
 		}
@@ -274,10 +277,13 @@ void Player::CheckHitCheck() {
 	 
 	if (SkillE < 50) {
 		//SkillE 무적 상태 게임시간 약(10초) 동안은 무적이다.
-		if (HitCheck[(YPos - 130) / 60][(XPos - 130) / 60] > 0 ||
-			HitCheck[(YPos - 130) / 60][(XPos - 110) / 60] > 0 ||
-			HitCheck[(YPos - 110) / 60][(XPos - 130) / 60] > 0 ||
-			HitCheck[(YPos - 110) / 60][(XPos - 110) / 60] > 0) {
+
+		//원활한 플레이를 위해서 피격 범위를 감소시킨다.
+		//플레이어의 크기 (가로 20 세로 20) 이 아닌 (가로 18 세로 18)으로 지정한다.
+		if (HitCheck[(YPos - TOPWALL - 9) / 60][(XPos - LEFTWALL - 9) / 60] > 0 ||
+			HitCheck[(YPos - TOPWALL - 9) / 60][(XPos - LEFTWALL + 9) / 60] > 0 ||
+			HitCheck[(YPos - TOPWALL + 9) / 60][(XPos - LEFTWALL - 9) / 60] > 0 ||
+			HitCheck[(YPos - TOPWALL + 9) / 60][(XPos - LEFTWALL + 9) / 60] > 0) {
 
 			//플레이어의 (순서대로) 왼쪽위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 지점의 HitCheck가 1이상일 경우
 
@@ -286,6 +292,12 @@ void Player::CheckHitCheck() {
 		}
 	}
 	
+}
+
+const bool Player::PlayerDie() const {
+	if (Health == 0)
+		return TRUE;
+	return FALSE;
 }
 
 
@@ -299,14 +311,6 @@ void Player::PaintPlayerIF(HDC hdc, HDC Bithdc) const {
 	TextOut(hdc, 520, PTOPWALL + 5, _T("Q"), 1);
 	TextOut(hdc, 630, PTOPWALL + 5, _T("W"), 1);
 	TextOut(hdc, 740, PTOPWALL + 5, _T("E"), 1);
-
-
-	//여기부터는 따로 인터페이스 클래스 만들어서 관리한다. 일단은 임시로 여기다가 출력해놓는거임
-	TextOut(hdc, 860, PTOPWALL + 5, _T("LEVEL"), 5);
-	//Level 출력
-	TextOut(hdc, 960, PTOPWALL + 5, _T("10"), 2);
-	TextOut(hdc, 1020, PTOPWALL + 5, _T("TIME"), 4);
-	TextOut(hdc, 1110, PTOPWALL + 5, _T("00:00:00"), 8);
 
 	//기본 비트맵 틀
 	OldPBrush = (HBRUSH)SelectObject(hdc, PlayerIFBrush1);

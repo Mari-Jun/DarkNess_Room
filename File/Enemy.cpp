@@ -835,8 +835,8 @@ void SelectAShot(AirEnemy** Aenemy, Player* player, const int WaitTime) {
 			//Delay가 0일경우만 실행한다.
 			//0이 아니면 이미 선택된 녀석이라 다시 선택하면 안되기 때문에
 
-			//최소 11 최대 11+ WaitTime만큼의 범위
-			Aenemy[Num]->SetDelay(rand() % WaitTime + 11);
+			//최소 12 최대 12+ WaitTime만큼의 범위
+			Aenemy[Num]->SetDelay(rand() % WaitTime + 12);
 
 			return;
 		}
