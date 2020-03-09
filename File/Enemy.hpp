@@ -18,6 +18,7 @@ public:
 	bool ChangeCharging();											//Charging값을 1씩 감소시킨다.
 	void SetDelay(int D);											//Delay값을 지정한다.
 	bool ChangeDelay();												//Delay값을 1씩 감소시킨다.
+	void Reset();
 
 	virtual void SetHitCheck(Player* player, const bool OnOff) const = 0;		//HitCheck를 설정한다.
 
@@ -90,6 +91,7 @@ void CreateLEnemy(LineEnemy** Lenemy);
 void DeleteLEnemy(LineEnemy** Lenemy);
 void SelectLShot(LineEnemy** Lenemy, const int WaitTime);
 int ChangeLInfo(LineEnemy** Lenmey, Player* player);
+void ResetLEnemy(LineEnemy** Lenemy);
 
 
 //광역포 에너미
@@ -121,6 +123,7 @@ private:
 void CreateWEnemy(WideEnemy** Wenemy);
 void DeleteWEnemy(WideEnemy** Wenemy);
 void ChangeWInfo(WideEnemy* WenemSy, Player* player, const int WaitTime);
+void ResetWEnemy(WideEnemy* Wenemy);
 
 //폭탄 에너미
 
@@ -147,6 +150,7 @@ void CreateBEnemy(BombEnemy** Benemy);
 void DeleteBEnemy(BombEnemy** Benemy);
 void SelectBShot(BombEnemy** Benemy, const int WaitTime);
 int ChangeBInfo(BombEnemy** Benemy, Player* player);
+void ResetBEnemy(BombEnemy** Benemy);
 
 //유도 비행기 에너미
 
@@ -179,3 +183,4 @@ void CreateAEnemy(AirEnemy** Aenemy);
 void DeleteAEnemy(AirEnemy** Aenemy);
 void SelectAShot(AirEnemy** Aenemy, Player* player, const int WaitTime);
 int ChangeAInfo(AirEnemy** Aenemy, Player* player);
+void ResetAEnemy(AirEnemy** Aenemy);

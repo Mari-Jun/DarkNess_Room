@@ -1,6 +1,8 @@
 #pragma once
 #include <windows.h>
 
+class Interface;
+
 static const double PI = 3.1415926535897;
 
 static HBRUSH PlayerBrush1;
@@ -53,7 +55,8 @@ public:
 	void UseSkillE();										//SkillE를 사용한다.
 
 	void SetHitCheck(const int Left, const int Right, const int Top, const int Bottom, const bool OnOff);		//HitCheck를 세팅한다.
-	void CheckHitCheck();									//HitCheck에 플레이어가 있는지 확인
+	void CheckHitCheck(Interface* Inter);					//HitCheck에 플레이어가 있는지 확인
+	void ResetHitCheck();
 
 	const bool PlayerDie() const;
 

@@ -10,13 +10,14 @@ static HBITMAP BackGroundBit[4];
 
 class Interface {
 public:
-	Interface(int L, int S);
+	Interface(int L, int S, int U);
 
 	const int GetLevel() const;			//Level값 반환
 	const int GetScore() const;			//Score값 반환
 
 	void ChangeLevel();					//Level 변환
-	void ChangeScore();					//Percent 변환
+	void ChangeScore();					//Score 변환
+	void ResetScoreUp();				//ScoreUp 변환
 
 	void PaintInterface(HDC hdc);
 	void PaintBackGround(HDC hdc, HDC Bithdc);
@@ -24,6 +25,7 @@ public:
 private:
 	int Level;
 	int Score;
+	int ScoreUp;
 };
 
 void CreateInterface(Interface** inter);				//사용할 객체 초기화

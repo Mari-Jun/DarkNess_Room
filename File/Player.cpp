@@ -1,5 +1,6 @@
 #include "Resource.hpp"
 #include "Player.hpp"
+#include "Interface.hpp"
 
 Player::Player(int X, int Y, int H, int Q, int W, int E, int HC) : XPos(X), YPos(Y), Health(H), SkillQ(Q), SkillW(W), SkillE(E){
 	memset(HitCheck, HC, sizeof(HitCheck));
@@ -273,7 +274,7 @@ void Player::SetHitCheck(const int Left, const int Right, const int Top, const i
 		}
 }
 
-void Player::CheckHitCheck() {
+void Player::CheckHitCheck(Interface* Inter) {
 	 
 	if (SkillE < 50) {
 		//SkillE 무적 상태 게임시간 약(10초) 동안은 무적이다.
@@ -289,9 +290,17 @@ void Player::CheckHitCheck() {
 
 			//Health를 감소시킨다.
 			Health--;
+
+			//ScoreUp값을 초기화한다.
+			Inter->ResetScoreUp();
 		}
 	}
 	
+}
+
+void Player::ResetHitCheck() {
+	//HitCheck를 Reset해준다.
+	memset(HitCheck, 0, sizeof(HitCheck));
 }
 
 const bool Player::PlayerDie() const {

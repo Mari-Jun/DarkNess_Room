@@ -64,6 +64,12 @@ bool Enemy::ChangeDelay() {
 	return false;
 }
 
+void Enemy::Reset() {
+	//Delay값과 Charging값을 Reset한다.
+	Delay = 0;
+	Charging = 0;
+}
+
 //고정 에너미
 
 FixEnemy::FixEnemy(int C, int D, int X, int Y) : Enemy(C, D), XPos(X), YPos(Y) {
@@ -358,7 +364,10 @@ int ChangeLInfo(LineEnemy** Lenemy, Player* player) {
 	return Count;
 }
 
-
+void ResetLEnemy(LineEnemy** Lenemy) {
+	for (int L = 0; L < LENEMYMAX; L++)
+		Lenemy[L]->Reset();
+}
 
 
 //광역포 에너미
@@ -536,6 +545,10 @@ void ChangeWInfo(WideEnemy* Wenemy, Player* player, const int WaitTime) {
 	}
 }
 
+void ResetWEnemy(WideEnemy* Wenemy) {
+	Wenemy->Reset();
+}
+
 
 //폭탄 에너미
 
@@ -699,7 +712,11 @@ int ChangeBInfo(BombEnemy** Benemy, Player* player) {
 	return Count;
 }
 
-
+void ResetBEnemy(BombEnemy** Benemy) {
+	//BombEnemy Reset!
+	for (int B = 0; B < BENEMYMAX; B++)
+		Benemy[B]->Reset();
+}
 
 //범위포 에너미
 
@@ -898,4 +915,10 @@ int ChangeAInfo(AirEnemy** Aenemy, Player* player) {
 	}
 	//Count값 (현재 실행되고 있는 LEnemy의 수)을 반환하여 LShot에게 적용시켜준다. 
 	return Count;
+}
+
+void ResetAEnemy(AirEnemy** Aenemy) {
+	//AirEnemy Reset!
+	for (int A = 0; A < AENEMYMAX; A++)
+		Aenemy[A]->Reset();
 }

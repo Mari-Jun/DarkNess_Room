@@ -120,6 +120,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//최대 에너미별 발사 수
 	static int LMaxShot = 0, WMaxShot = 0, BMaxShot = 0, AMaxShot = 0;
 
+	//발사 대기 시간 설정
+	static int LWT = 0, WWT = 0, BWT = 0, AWT = 0;
+
 	//알파블렌딩
 	static BLENDFUNCTION bf1, bf2;
 
@@ -489,16 +492,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		case 8:
 			//플레이어 인터페이스 타이머
 
-			//Level을 때가 되면 변경해준다.
-			LevelTime++;
-			if (LevelTime == 510) {
-				//게임시간 기준 50초
-				//+ Level표시 시간 1초
-				//Time을 0으로 초기화
-				LevelTime = 0;
-				Inter->ChangeLevel();
-			}
+			if (Inter->GetLevel() < 10) {
+				//Level을 때가 되면 변경해준다.
+				LevelTime++;
 
+				if (LevelTime == 101) {
+					//게임시간 기준 50초
+					//+ Level표시 시간 1초
+					//Time을 0으로 초기화
+					LevelTime = 0;
+					Inter->ChangeLevel();
+
+					//에너미들 초기화
+					ResetLEnemy(LEnemy);
+					ResetWEnemy(WEnemy);
+					ResetBEnemy(BEnemy);
+					ResetAEnemy(AEnemy);
+					player->ResetHitCheck();
+				}
+			}
+			else {
+				LevelTime++;
+				if (LevelTime > 10)
+					//Level이 10일때는 스코어 점수를 업데이트 하기 위해서
+					//LevelTime을 11으로 설정한다.
+					LevelTime = 11;
+			}
+			
 			//플레이어의 체력을 확인
 			if (player->PlayerDie()) {
 				//체력이 0이라면
@@ -510,6 +530,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//플레이어 스킬 쿨다운을 업데이트한다.
 			player->SkillCoolDown(hwnd);
+
+			//플레이어 스코어 점수를 업데이트한다.
+			if (LevelTime > 10)
+				Inter->ChangeScore();
 			break;
 		case 9:
 			//플레이어 이동 타이머
@@ -525,6 +549,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//레벨에 따른 세팅을 한다.
 			LevelSetting(Inter->GetLevel(), LMaxShot, WMaxShot, BMaxShot, AMaxShot);
+			WaitTimeSet(Inter->GetLevel(), LWT, WWT, BWT, AWT);
 
 			if (LevelTime > 10) {
 				//LevelTime이 10이상일때 설정한다.
@@ -532,28 +557,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 				//LineEnmey
 				for (LShot; LShot < LMaxShot; LShot++) {
-					SelectLShot(LEnemy, 1);
+					SelectLShot(LEnemy, LWT);
 				}
 				LShot = ChangeLInfo(LEnemy, player);
 
 				//WideEnemy
 				if (WMaxShot == 1)
-					ChangeWInfo(WEnemy, player, 40);
+					ChangeWInfo(WEnemy, player, WWT);
 
 				//BombEnemy;
 				for (BShot; BShot < BMaxShot; BShot++) {
-					SelectBShot(BEnemy, 10);
+					SelectBShot(BEnemy, BWT);
 				}
 				BShot = ChangeBInfo(BEnemy, player);
 
 				//AirEnemy
 				for (AShot; AShot < AMaxShot; AShot++) {
-					SelectAShot(AEnemy, player, 20);
+					SelectAShot(AEnemy, player, AWT);
 				}
 				AShot = ChangeAInfo(AEnemy, player);
 
 				//플레이어가 적의 공격에 맞았는지 확인한다.
-				player->CheckHitCheck();
+				player->CheckHitCheck(Inter);
 			}
 
 			break;

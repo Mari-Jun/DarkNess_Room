@@ -1,7 +1,7 @@
 #include "Resource.hpp"
 #include "Interface.hpp"
 
-Interface::Interface(int L, int S) : Level(L), Score(S) {
+Interface::Interface(int L, int S, int U) : Level(L), Score(S), ScoreUp(U) {
 
 }
 
@@ -21,7 +21,16 @@ void Interface::ChangeLevel() {
 }
 
 void Interface::ChangeScore() {
+	//ScoreUp을 10씩 증가시켜주고
+	//Score에 ScoreUp을 더한다.
 
+	ScoreUp += Level;
+	Score += ScoreUp;
+}
+
+void Interface::ResetScoreUp() {
+	//Player의 체력이 깎였음으로 ScoreUp을 Reset해준다.
+	ScoreUp /= 2;
 }
 
 void Interface::PaintInterface(HDC hdc) {
@@ -29,19 +38,19 @@ void Interface::PaintInterface(HDC hdc) {
 
 	SelectObject(hdc, InterfaceFont1);
 
-	TextOut(hdc, 860, PTOPWALL + 5, _T("LEVEL"), 5);
+	TextOut(hdc, 840, PTOPWALL + 5, _T("LEVEL"), 5);
 
 	//Level 출력
 	wchar_t str1[10];
 	swprintf_s(str1, L"%d%d", Level / 10, Level % 10);
-	TextOut(hdc, 960, PTOPWALL + 5, str1, 3);
+	TextOut(hdc, 940, PTOPWALL + 5, str1, 3);
 
-	TextOut(hdc, 1020, PTOPWALL + 5, _T("SCORE"), 5);
+	TextOut(hdc, 1000, PTOPWALL + 5, _T("SCORE"), 5);
 
 	//Score 출력
 	wchar_t str2[10];
-	swprintf_s(str2, L"%d%d%d%d%d%d", Score / 100000, Score / 10000 % 10, Score / 1000 % 10, Score / 100 % 10, Score / 10 % 10, Score % 10);
-	TextOut(hdc, 1130, PTOPWALL + 5, str2, 7);
+	swprintf_s(str2, L"%d%d%d%d%d%d%d", Score / 1000000, Score / 100000 % 10, Score / 10000 % 10, Score / 1000 % 10, Score / 100 % 10, Score / 10 % 10, Score % 10);
+	TextOut(hdc, 1110, PTOPWALL + 5, str2, 7);
 }
 
 void Interface::PaintBackGround(HDC hdc, HDC Bithdc) {
@@ -105,7 +114,7 @@ void Interface::PaintBackGroundLine(HDC hdc) {
 
 void CreateInterface(Interface** inter) {
 	if (*inter == NULL) {
-		*inter = new Interface(1, 0);
+		*inter = new Interface(1, 0 ,0);
 	}
 
 	//GameInterface에 사용될 객체들 생성
