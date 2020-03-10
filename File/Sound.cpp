@@ -51,3 +51,7 @@ void MainPageSoundStop() {
 	FMOD_Channel_Stop(M_Channel[0]);
 	FMOD_Channel_Stop(M_Channel[1]);
 }
+
+void GamePageSoundStop() {
+	FMOD_Channel_Stop(M_Channel[0]);
+}

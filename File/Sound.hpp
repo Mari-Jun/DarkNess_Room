@@ -21,3 +21,5 @@ void PlayLightningSound();			//번개 소리 재생
 void PlayButtonClickSound();		//버튼 클릭 소리 재생
 
 void MainPageSoundStop();			//MainPage에서 발생하는 모든 소리 중지
+
+void GamePageSoundStop();			//GamePage에서 발생하는 모든 소리 중지

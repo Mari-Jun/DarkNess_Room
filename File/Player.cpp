@@ -390,7 +390,7 @@ void CreatePlayer(Player** player) {
 	
 	if (*player == NULL) {
 		//*player啊 NULL老 版快 积己茄促.
-		*player = new Player(640, 450, 100, 0, 0, 0, 0);
+		*player = new Player(640, 450, 10, 0, 0, 0, 0);
 	}
 
 }

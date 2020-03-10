@@ -88,7 +88,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//클래스 객체들
 	static Player* player;
 	static MainPage* Main;
-	static HelpPage* Help = NULL;
+	static HelpPage* Help;
+	static RankPage* Rank;
 	static Camera* camera;
 	static Interface* Inter;
 	static LineEnemy* LEnemy[LENEMYMAX];
@@ -213,6 +214,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				}
 			}
 		}
+		//MainCreate가 false이기 때문에
+		if (Page == 5) {
+			//RankPage변환 확인
+			Page = Rank->ChangeRankPage(My, Mx);
+			if (Page == 0) {
+				//StartPage즉 LoadingPage로 갔을 경우
+				PlayButtonClickSound();
+				DeleteRankPage(&Rank);
+
+				//RankPageTimer제거
+				KillTimer(hwnd, 6);
+
+				CreateLoadingPage();
+				//Loading 타이머 세팅
+				SetTimer(hwnd, 1, 10, NULL);
+				LoadingCount = 199;
+			}
+		}
 		break;
 	case WM_LBUTTONDOWN:
 		Mx = LOWORD(lParam);
@@ -227,6 +246,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				Help->HelpClickCheck(My, Mx);
 			}
 		}
+		if (Page == 5) {
+			//RankPage에서의 마우스 왼쪽 클릭
+			Rank->MainClickCheck(My, Mx);
+		}
 		break;
 	case WM_MOUSEMOVE:
 		Mx = LOWORD(lParam);
@@ -238,6 +261,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		else if (Page == 2) {
 			//HelpPage에서의 마우스 이동
 			Help->MouseUpCheck(My, Mx);
+		}
+		else if (Page == 5) {
+			//RankPage에서의 마우스 이동
+			Rank->MouseUpCheck(My, Mx);
 		}
 		break;
 	case WM_TIMER:
@@ -463,6 +490,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//카메라 제거
 				DeleteCamera(&camera);
 
+				//인터페이스 제거
+				DeleteInterface(&Inter);
+
 				//적 제거
 				DeleteLEnemy(LEnemy);
 				DeleteWEnemy(&WEnemy);
@@ -477,8 +507,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				DeleteObject(GamePlayBit2);
 				DeleteObject(GamePlayBit3);
 
+				//GamePage Sound 제거
+				GamePageSoundStop();
+
 				//Page RankPage인 5로 변경
 				Page = 5;
+
+				//RankPage 생성
+				CreateRankPage(&Rank);
 
 				//ScoreRankTimer실행
 				SetTimer(hwnd, 6, 10, NULL);
@@ -633,7 +669,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		}
 		else if (Page == 5) {
 			//RankPage 그리기
-			PaintRankPage(mem1dc, Inter);
+			Rank->PaintRankPage(mem1dc);
 		}
 		else if (Page == 10) {
 			//GamePage 그리기
