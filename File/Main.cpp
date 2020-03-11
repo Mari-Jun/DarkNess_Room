@@ -127,7 +127,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//알파블렌딩
 	static BLENDFUNCTION bf1, bf2;
 
+	//Level이 올라가는 시간
 	static int LevelTime = 0;
+
+	//Rank 설정을 위한 값
+	static int Ranking = 0;
 
 	switch (iMsg)
 	{
@@ -157,6 +161,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	case WM_CHAR:
 		if (Page == 10) {
 			player->UseSkill(wParam);
+		}
+		if (Page == 5) {
+			Rank->SetName(Ranking, wParam);
 		}
 		break;
 	case WM_LBUTTONUP:
@@ -460,6 +467,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//GamePageLoading이 ScreeeY(820) 된다면 모든 로딩이 끝난것 이므로 
 					//GamePageLoading타이머 제거
 					KillTimer(hwnd, 4);
+					
+					//게임이 시작함으로 LevelTime 초기화
+					LevelTime = 0;
+
 					//게임 Timer 생성
 					SetTimer(hwnd, 8, 100, NULL);
 					SetTimer(hwnd, 9, 10, NULL);
@@ -490,9 +501,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//카메라 제거
 				DeleteCamera(&camera);
 
-				//인터페이스 제거
-				DeleteInterface(&Inter);
-
 				//적 제거
 				DeleteLEnemy(LEnemy);
 				DeleteWEnemy(&WEnemy);
@@ -515,6 +523,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 				//RankPage 생성
 				CreateRankPage(&Rank);
+
+				//현재 플레이어 스코어 저장
+				Ranking = Rank->CreateRank(Inter);
+
+				//인터페이스 제거
+				DeleteInterface(&Inter);
 
 				//ScoreRankTimer실행
 				SetTimer(hwnd, 6, 10, NULL);

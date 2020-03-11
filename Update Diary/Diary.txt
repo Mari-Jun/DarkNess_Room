@@ -95,3 +95,7 @@ Day23
 
 Day24
 RankPage업데이트
+
+
+Day25
+RankPage 구현 완료

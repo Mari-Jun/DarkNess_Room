@@ -3,7 +3,7 @@
 #include "Interface.hpp"
 
 
-RankPage::RankPage(int M, int R) : MainClick(M), Rank{ R,R,R,R,R,R,R,R,R,R } {
+RankPage::RankPage(int M, TCHAR N, int R) : MainClick(M), Name{ N, }, Rank{ R, } {
 
 }
 
@@ -61,6 +61,61 @@ void RankPage::MouseUpCheck(const int y, const int x) {
 	}
 }
 
+void RankPage::ChangeName(const int Num, const wchar_t N[]) {
+	//Name을 변경한다.
+	_tcscpy_s(Name[Num], N);
+}
+
+void RankPage::SetName(const int Num, WPARAM wParam) {
+	//Name을 입력받습니다.
+
+	int Len = static_cast<int>(_tcslen(Name[Num]));
+
+	if (Len > 9)
+		return;
+
+	if (wParam == VK_BACK) {
+		//BackSpace눌렀을 경우
+		Name[Num][Len - 1] = NULL;
+		Len--;
+	}
+	else {
+		Name[Num][Len] = static_cast<TCHAR>(wParam);
+		Name[Num][Len + 1] = NULL;
+	}
+}
+
+void RankPage::ChangeRank(const int Num, const int Score) {
+	//Rank를 변경한다.
+	Rank[Num] = Score;
+}
+
+int RankPage::CreateRank(Interface* Inter) {
+	int ret = Inter->GetLevel() * 10000000 + Inter->GetScore();
+
+	for (int S = 9; S >= 0; S--) {
+		//제일 아래순위부터 검사한다.
+		if (ret < Rank[S] && S < 9) {
+			//현재 스코어가 저장된 스코어보다 적다면
+			for (int M = 9; M > S + 1; M--) {
+				//순위 밀기
+				Rank[M] = Rank[M - 1];
+				_tcscpy_s(Name[M], Name[M - 1]);
+			}
+			//순위 저장
+			Rank[S + 1] = ret;
+
+			//Name 초기화
+			_tcscpy_s(Name[S + 1], _T(""));
+
+			//랭킹 값을 반환
+			return S + 1;
+		}
+	}
+	//랭킹에 들지 못한다면 10을 반환
+	return 10;
+}
+
 void RankPage::PaintRankPage(HDC hdc) {
 	//RankFont1를 사용해서 글을 작성한다.
 	SelectObject(hdc, RankFont1);
@@ -81,57 +136,82 @@ void RankPage::PaintRankPage(HDC hdc) {
 	
 	TextOut(hdc, 1000, 710, _T("Main"), 4);
 
-
 	SelectObject(hdc, RankFont3);
 	SetTextColor(hdc, RGB(255, 255, 255));
 
-	TextOut(hdc, 300, 250, _T("RANK"), 4);
-	TextOut(hdc, 600, 250, _T("LEVEL"), 5);
-	TextOut(hdc, 900, 250, _T("Score"), 5);
+	TextOut(hdc, 250, 250, _T("RANK"), 4);
+	TextOut(hdc, 470, 250, _T("NAME"), 4);
+	TextOut(hdc, 700, 250, _T("LEVEL"), 5);
+	TextOut(hdc, 950, 250, _T("Score"), 5);
 
 	for (int i = 0; i < 10; i++) {
-		wchar_t str[3];
-		swprintf_s(str, L"%d%d", (i + 1) / 10, (i + 1) % 10);
-		TextOut(hdc, 300, 300 + 40 * i, str, 2);
-	}
+		//Rank출력
+		wchar_t str1[3];
+		swprintf_s(str1, L"%d%d", (i + 1) / 10, (i + 1) % 10);
+		TextOut(hdc, 280, 300 + 40 * i, str1, 2);
 
-	for (int i = 0; i < 10; i++) {
-		//wchar_t str[3];
-		TextOut(hdc, 600, 300 + 40 * i, _T("01"), 2);
-	}
+		//Name출력
+		TextOut(hdc, 470, 300 + 40 * i, Name[i], static_cast<int>(_tcslen(Name[i])));
 
-	for (int i = 0; i < 10; i++) {
-		//wchar_t str[10];
-		TextOut(hdc, 870, 300 + 40 * i, _T("1234567"), 7);
+		//Level출력
+		wchar_t str2[3];
+		swprintf_s(str2, L"%d%d", Rank[i] / 100000000, Rank[i] / 10000000 % 10);
+		TextOut(hdc, 740, 300 + 40 * i, str2, 2);
+
+		//Score출력
+		wchar_t str3[10];
+		swprintf_s(str3, L"%d%d%d%d%d%d%d", Rank[i] / 1000000 % 10, Rank[i] / 100000 % 10, Rank[i] / 10000 % 10, Rank[i] / 1000 % 10, Rank[i] / 100 % 10, Rank[i] / 10 % 10, Rank[i] % 10);
+		TextOut(hdc, 920, 300 + 40 * i, str3, 7);
 	}
 		
-}
-
-void RankPage::CreateRank(Interface* inter) {
-
 }
 
 
 void CreateRankPage(RankPage** Rank) {
 	if (*Rank == NULL) {
 		//*Rank가 NULL일때만 작동
-		*Rank = new RankPage(0, 0);
+		*Rank = new RankPage(0, NULL, 0);
+		RankSet(*Rank);
 	}
 	RankFont1 = CreateFontW(180, 40, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Vladimir Script"));
 	RankFont2 = CreateFontW(100, 50, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Algerian"));
 	RankFont3 = CreateFontW(40, 15, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
-
-	File = CreateFile( _T("C:\\Users\\Rank.txt"), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
 void DeleteRankPage(RankPage** Rank){
-	if (*Rank != NULL) {
+
+	//RankPage는 한번 실행되면 계속 있어야한다. 그래서 Font같은것만 삭제하자
+	/*if (*Rank != NULL) {
 		//*Rank가 NULL이 아닐때 작동
 		delete* Rank;
 		*Rank = NULL;
-	}
+	}*/
 	DeleteObject(RankFont1);
 	DeleteObject(RankFont2);
 	DeleteObject(RankFont3);
-	CloseHandle(File);
+}
+
+void RankSet(RankPage* Rank) {
+	//처음 RankPage가 생성되었을때 Rank들을 세팅해준다.
+	Rank->ChangeRank(0, 109999999);
+	Rank->ChangeRank(1, 100456123);
+	Rank->ChangeRank(2, 90264553);
+	Rank->ChangeRank(3, 90213564);
+	Rank->ChangeRank(4, 80200000);
+	Rank->ChangeRank(5, 60195321);
+	Rank->ChangeRank(6, 50153232);
+	Rank->ChangeRank(7, 40098325);
+	Rank->ChangeRank(8, 10001111);
+	Rank->ChangeRank(9, 0);
+
+	Rank->ChangeName(0, L"NekoMari");
+	Rank->ChangeName(1, L"정복자");
+	Rank->ChangeName(2, L"Master");
+	Rank->ChangeName(3, L"KPU");
+	Rank->ChangeName(4, L"Takahashi");
+	Rank->ChangeName(5, L"Hell");
+	Rank->ChangeName(6, L"Game");
+	Rank->ChangeName(7, L"Taki");
+	Rank->ChangeName(8, L"초보");
+	Rank->ChangeName(9, L"Beginner");
 }
