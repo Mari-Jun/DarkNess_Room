@@ -62,6 +62,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//StartPage HDC
 	static HDC Startdc1, Startdc2;
 
+	//RankPage HDC
+	static HDC Rankdc1, Rankdc2;
+
 	//GamePlay HDC 1: 기본, 2: 비트맵 3: 블렌딩
 	static HDC Gamedc1, Gamedc2, Gamedc3;
 
@@ -79,8 +82,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	//StartPage를 위한 비트맵 1 : 배경 이미지, 2 : 텍스트
 	static HBITMAP MainPageBit1, MainPageBit2;
 
+	//RankPage를 위한 비트맵 
+	static HBITMAP RankPageBit1, RankPageBit2;
+
 	//GamePlay페이지를 위한 비트맵
-	static HBITMAP GamePlayBit1, OldGamePlayBit1, GamePlayBit2, OldGamePlayBit2 ,GamePlayBit3, OldGamePlayBit3;
+	static HBITMAP GamePlayBit1, GamePlayBit2, GamePlayBit3;
 
 	//GamePlay페이지를 위한 폰트
 	static HFONT GamePlayFont;
@@ -90,6 +96,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static MainPage* Main;
 	static HelpPage* Help;
 	static RankPage* Rank;
+	static CreditPage* Credit;
 	static Camera* camera;
 	static Interface* Inter;
 	static LineEnemy* LEnemy[LENEMYMAX];
@@ -215,9 +222,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			else if (Page == 2) {
 				Page = Help->ChangeHelpPage(My, Mx);
 				if (Page == 1) {
+					//Main화면으로 돌아왔을 경우
 					PlayButtonClickSound();
 					DeleteHelpPage(&Help);
 					CreateMainPage(&Main);
+				}
+				else if (Page == 6) {
+					//Credit화면으로 갔을 경우
+					PlayButtonClickSound();
+					CreateCreditPage(&Credit);
+				}
+			}
+			else if (Page == 6) {
+				Page = Credit->ChangeCreditPage(My, Mx);
+				if (Page == 2) {
+					//Help화면으로 돌아왔을 경우
+					PlayButtonClickSound();
+					DeleteCreditPage(&Credit);
 				}
 			}
 		}
@@ -229,6 +250,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//StartPage즉 LoadingPage로 갔을 경우
 				PlayButtonClickSound();
 				DeleteRankPage(&Rank);
+
+				//HDC, BitMap 지우기
+				DeleteObject(RankPageBit1);
+				DeleteObject(RankPageBit2);
+				DeleteDC(Rankdc1);
+				DeleteDC(Rankdc2);
+
+				//캐럿 숨기기
+				HideCaret(hwnd);
+				DestroyCaret();
 
 				//RankPageTimer제거
 				KillTimer(hwnd, 6);
@@ -252,6 +283,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//HelpPage에서의 마우스 왼쪽 클릭
 				Help->HelpClickCheck(My, Mx);
 			}
+			else if (Page == 6) {
+				//CreditPage에서의 마우스 왼쪽 클릭
+				Credit->BackClickCheck(My, Mx);
+			}
 		}
 		if (Page == 5) {
 			//RankPage에서의 마우스 왼쪽 클릭
@@ -272,6 +307,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		else if (Page == 5) {
 			//RankPage에서의 마우스 이동
 			Rank->MouseUpCheck(My, Mx);
+		}
+		else if (Page == 6) {
+			//CreditPage에서의 마우스 이동
+			Credit->MouseUpCheck(My, Mx);
 		}
 		break;
 	case WM_TIMER:
@@ -471,6 +510,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					//게임이 시작함으로 LevelTime 초기화
 					LevelTime = 0;
 
+					//게임 시작을 했기 때문에 LevelUp 사운드 출력
+					PlayLevelUpSound();
+
 					//게임 Timer 생성
 					SetTimer(hwnd, 8, 100, NULL);
 					SetTimer(hwnd, 9, 10, NULL);
@@ -518,14 +560,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//GamePage Sound 제거
 				GamePageSoundStop();
 
+				//RankPageSound 출력
+				PlayRankPageSound();
+
 				//Page RankPage인 5로 변경
 				Page = 5;
 
 				//RankPage 생성
 				CreateRankPage(&Rank);
 
+				//캐럿 생성
+				CreateCaret(hwnd, NULL, 15, 40);
+				ShowCaret(hwnd);
+
+				//RankPage에서 필요한 HDC, BITMAP들 생성
+				hdc = GetDC(hwnd);
+
+				//RankPageBit1 = 비트맵
+				RankPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\RankPage.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+				//RankPageBit2 = 그 이외의 것들
+				RankPageBit2 = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
+
+				Rankdc1 = CreateCompatibleDC(hdc);
+				Rankdc2 = CreateCompatibleDC(hdc);
+
+				SelectObject(Rankdc1, RankPageBit1);
+				SelectObject(Rankdc2, RankPageBit2);
+
+				SetBkMode(Rankdc2, TRANSPARENT);
+
+				ReleaseDC(hwnd, hdc);
+
 				//현재 플레이어 스코어 저장
-				Ranking = Rank->CreateRank(Inter);
+				Ranking = Rank->CreateRank(Inter);			
 
 				//인터페이스 제거
 				DeleteInterface(&Inter);
@@ -535,9 +603,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			}
 			break;
 		case 6:
-			//ScoreRankTimer
-			
-
+			//ScoreRankTimer			
 			break;
 		case 8:
 			//플레이어 인터페이스 타이머
@@ -546,12 +612,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//Level을 때가 되면 변경해준다.
 				LevelTime++;
 
-				if (LevelTime == 101) {
+				if (LevelTime == 501) {
 					//게임시간 기준 50초
 					//+ Level표시 시간 1초
 					//Time을 0으로 초기화
 					LevelTime = 0;
 					Inter->ChangeLevel();
+
+					//레벨 업을 했기 때문에 LevelUp 사운드 출력
+					PlayLevelUpSound();
 
 					//에너미들 초기화
 					ResetLEnemy(LEnemy);
@@ -647,8 +716,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			//로딩 페이지 그리기
 			PaintLoadingPage(mem1dc, LoadingCount, Page);
 		}
-		else if (Page == 1 || Page == 2) {
-			//Page1 : MainPage, Page2 : HelpPage 그리기
+		else if (Page == 1 || Page == 2 || Page == 6) {
+			//Page1 : MainPage, Page2 : HelpPage 그리기, Page6 : CreditPage 그리기
 			
 			//MainCreate가 True라면 MainPage가 완성된 상태이고 False라면 페이드 아웃, 페이드 인등 미완성된 상태이다.
 			if(MainCreate)
@@ -665,10 +734,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 			//Startdc2에 Page들을 Paint한다.
 			if (Page == 1) {
+				//StartPage그리기
 				Main->PaintMainPage(Startdc2);
 			}
-			else {
+			else if (Page == 2) {
+				//HelpPage 그리기
 				Help->PaintHelpPage(Startdc2, Helpdc1);
+			}
+			else {
+				//CreditPage 그리기
+				Credit->PaintCreditPage(Startdc2);
 			}
 
 			//알파블렌딩 (투명화)를 위한 작업
@@ -682,8 +757,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			PaintLoadingPage(mem1dc, LoadingCount * 2, Page);
 		}
 		else if (Page == 5) {
+			//Rankdc1에 그려진걸 mem1dc에 복사한다.
+			BitBlt(Rankdc2, 0, 0, ScreenX, ScreenY, Rankdc1, 0, 0, SRCCOPY);
+
 			//RankPage 그리기
-			Rank->PaintRankPage(mem1dc);
+			Rank->PaintRankPage(Rankdc2, Ranking);
+
+			//Rankdc2에 그려진걸 Rankdc1에 복사한다.
+			BitBlt(mem1dc, 0, 0, ScreenX, ScreenY, Rankdc2, 0, 0, SRCCOPY);
+
+		
 		}
 		else if (Page == 10) {
 			//GamePage 그리기

@@ -116,7 +116,7 @@ int RankPage::CreateRank(Interface* Inter) {
 	return 10;
 }
 
-void RankPage::PaintRankPage(HDC hdc) {
+void RankPage::PaintRankPage(HDC hdc, int Ranking) {
 	//RankFont1를 사용해서 글을 작성한다.
 	SelectObject(hdc, RankFont1);
 	SetTextColor(hdc, RGB(122, 0, 0));
@@ -152,6 +152,12 @@ void RankPage::PaintRankPage(HDC hdc) {
 
 		//Name출력
 		TextOut(hdc, 470, 300 + 40 * i, Name[i], static_cast<int>(_tcslen(Name[i])));
+		if (Ranking == i) {
+			//캐럿 출력
+			SIZE size;
+			GetTextExtentPoint(hdc, Name[Ranking], static_cast<int>(_tcslen(Name[Ranking])), &size);
+			SetCaretPos(470 + size.cx, 300 + 40 * Ranking);
+		}
 
 		//Level출력
 		wchar_t str2[3];

@@ -1,6 +1,7 @@
 #include "Resource.hpp"
 #include "Player.hpp"
 #include "Interface.hpp"
+#include "Sound.hpp"
 
 Player::Player(int X, int Y, int H, int Q, int W, int E, int HC) : XPos(X), YPos(Y), Health(H), SkillQ(Q), SkillW(W), SkillE(E){
 	memset(HitCheck, HC, sizeof(HitCheck));
@@ -192,18 +193,30 @@ void Player::UseSkill(WPARAM wParam) {
 	switch (wParam) {
 	case 'q':
 	case 'Q':
-		if (GetSkillQ() == 0)
+		if (GetSkillQ() == 0) {
 			UseSkillQ();
+
+			//SkillQ 사운드 재생
+			PlaySkillQSound();
+		}
 		break;
 	case 'w':
 	case 'W':
-		if (GetSkillW() == 0)
+		if (GetSkillW() == 0) {
 			UseSkillW();
+
+			//SkillW 사운드 재생
+			PlaySkillWSound();
+		}	
 		break;
 	case 'e':
 	case 'E':
-		if (GetSkillE() == 0)
+		if (GetSkillE() == 0) {
 			UseSkillE();
+
+			//SkillE 사운드 재생
+			PlaySkillESound();
+		}
 	default:
 		break;
 	}
@@ -247,7 +260,7 @@ void Player::UseSkillQ() {
 	SkillQ = 20;
 
 	//효과 발동
-	Health += 10;
+	Health += 20;
 	if (Health > 100)
 		Health = 100;
 }
@@ -390,7 +403,7 @@ void CreatePlayer(Player** player) {
 	
 	if (*player == NULL) {
 		//*player가 NULL일 경우 생성한다.
-		*player = new Player(640, 450, 10, 0, 0, 0, 0);
+		*player = new Player(640, 450, 100, 0, 0, 0, 0);
 	}
 
 }

@@ -2,7 +2,7 @@
 
 void SoundInit() {
 	FMOD_System_Create(&M_System);
-	FMOD_System_Init(M_System, Sound10, FMOD_INIT_NORMAL, 0);
+	FMOD_System_Init(M_System, Sound20, FMOD_INIT_NORMAL, 0);
 
 	//배경음 생성
 	for (int i = 0; i < Sound3; i++) {
@@ -17,7 +17,23 @@ void SoundInit() {
 	FMOD_System_CreateStream(M_System, ".\\Sound\\Effect1.mp3", FMOD_LOOP_OFF, 0, &M_Sound[2]);
 
 	//3 : 버튼 클릭음
-	FMOD_System_CreateSound(M_System, ".\\Sound\\Effect2.mp3", FMOD_LOOP_OFF, 0, &M_Sound[3]);
+	FMOD_System_CreateStream(M_System, ".\\Sound\\Effect2.mp3", FMOD_LOOP_OFF, 0, &M_Sound[3]);
+
+	//4: 레벨 업 소리
+	FMOD_System_CreateStream(M_System, ".\\Sound\\LevelUp.mp3", FMOD_LOOP_OFF, 0, &M_Sound[4]);
+
+	//5,6,7 Wide,Bomb,Air Eemey Shot Sound
+	FMOD_System_CreateStream(M_System, ".\\Sound\\WideShot.mp3", FMOD_LOOP_OFF, 0, &M_Sound[5]);
+	FMOD_System_CreateStream(M_System, ".\\Sound\\Bomb.mp3", FMOD_LOOP_OFF, 0, &M_Sound[6]);
+	FMOD_System_CreateStream(M_System, ".\\Sound\\AirShot.mp3", FMOD_LOOP_OFF, 0, &M_Sound[7]);
+
+	//8: Rankpage 생성 소리
+	FMOD_System_CreateStream(M_System, ".\\Sound\\Rank.mp3", FMOD_LOOP_OFF, 0, &M_Sound[8]);
+
+	//9,10,11 : Skill Q,W E
+	FMOD_System_CreateStream(M_System, ".\\Sound\\SkillQ.mp3", FMOD_LOOP_OFF, 0, &M_Sound[9]);
+	FMOD_System_CreateStream(M_System, ".\\Sound\\SkillW.mp3", FMOD_LOOP_OFF, 0, &M_Sound[10]);
+	FMOD_System_CreateStream(M_System, ".\\Sound\\SkillE.mp3", FMOD_LOOP_OFF, 0, &M_Sound[11]);
 	
 }
 
@@ -47,11 +63,62 @@ void PlayButtonClickSound(){
 	FMOD_System_PlaySound(M_System, M_Sound[3], NULL, FALSE, &M_Channel[2]);
 }
 
+void PlayLevelUpSound() {
+	//효과음 LevelUp을 재생한다.
+	FMOD_System_PlaySound(M_System, M_Sound[4], NULL, FALSE, &M_Channel[1]);
+}
+
+void PlayWideShotSound() {
+	//효과음 WideShot을 재생한다.
+	FMOD_System_PlaySound(M_System, M_Sound[5], NULL, FALSE, &M_Channel[2]);
+}
+
+void PlayBombShotSound(int Num) {
+	//효과음 BombShot을 재생한다.
+
+	//Num은 Bomb적의 숫자 8개중 한개 즉3~10
+
+	FMOD_System_PlaySound(M_System, M_Sound[6], NULL, FALSE, &M_Channel[3+Num]);
+}
+
+void PlayAirShotSound(int Num) {
+	//효과음 AirShot을 재생한다.
+
+	//Num은 Air적의 숫자 2개중 한개 즉11~12
+	FMOD_System_PlaySound(M_System, M_Sound[7], NULL, FALSE, &M_Channel[11+Num]);
+}
+
+void PlayRankPageSound() {
+	//효과음 Rank을 재생한다.
+	
+	FMOD_System_PlaySound(M_System, M_Sound[8], NULL, FALSE, &M_Channel[0]);
+}
+
+void PlaySkillQSound() {
+	//효과음 SkillQ을 재생한다.
+
+	FMOD_System_PlaySound(M_System, M_Sound[9], NULL, FALSE, &M_Channel[13]);
+}
+
+void PlaySkillWSound() {
+	//효과음 SkillW을 재생한다.
+
+	FMOD_System_PlaySound(M_System, M_Sound[10], NULL, FALSE, &M_Channel[14]);
+}
+
+void PlaySkillESound() {
+	//효과음 SkillE을 재생한다.
+
+	FMOD_System_PlaySound(M_System, M_Sound[11], NULL, FALSE, &M_Channel[15]);
+}
+
+
 void MainPageSoundStop() {
 	FMOD_Channel_Stop(M_Channel[0]);
 	FMOD_Channel_Stop(M_Channel[1]);
 }
 
 void GamePageSoundStop() {
-	FMOD_Channel_Stop(M_Channel[0]);
+	for(int i=0; i<16; i++)
+		FMOD_Channel_Stop(M_Channel[i]);
 }

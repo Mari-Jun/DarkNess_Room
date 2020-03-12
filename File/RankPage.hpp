@@ -27,7 +27,7 @@ public:
 	void ChangeRank(const int Num, const int Score);						//Rank값 변경
 	int CreateRank(Interface* Inter);										//Interface에서 Rank값을 변경한다.  (새로 만든다.)
 
-	void PaintRankPage(HDC hdc);
+	void PaintRankPage(HDC hdc, int Ranking);
 
 private:
 	int MainClick;

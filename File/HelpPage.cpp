@@ -168,7 +168,7 @@ const int HelpPage::ChangeHelpPage(const int y, const int x) {
 		ChangeCreditButton(0);
 		if (CreditRange(y, x))
 			//Credit페이지로 넘어간다.
-			return 5;
+			return 6;
 	}
 
 	//Help페이지 그대로 있는다.

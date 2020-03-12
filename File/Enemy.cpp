@@ -1,6 +1,7 @@
 #include "Resource.hpp"
 #include "Player.hpp"
 #include "Enemy.hpp"
+#include "Sound.hpp"
 
 
 //기본 에너미
@@ -533,6 +534,9 @@ void ChangeWInfo(WideEnemy* Wenemy, Player* player, const int WaitTime) {
 			//방금 충전이 됬을 경우
 			//SetHitCheck를 호출한다.
 			Wenemy->SetHitCheck(player, true);
+
+			//사운드를 재생한다.
+			PlayWideShotSound();
 		}
 
 		if (Wenemy->ChangeCharging()) {
@@ -694,6 +698,9 @@ int ChangeBInfo(BombEnemy** Benemy, Player* player) {
 				//방금 충전이 됬을 경우
 				//SetHitCheck를 호출한다.
 				Benemy[i]->SetHitCheck(player, true);
+
+				//사운드를 재생한다.
+				PlayBombShotSound(i);
 			}
 
 			if (Benemy[i]->ChangeCharging()) {
@@ -855,6 +862,8 @@ void SelectAShot(AirEnemy** Aenemy, Player* player, const int WaitTime) {
 			//최소 12 최대 12+ WaitTime만큼의 범위
 			Aenemy[Num]->SetDelay(rand() % WaitTime + 12);
 
+			
+
 			return;
 		}
 	}
@@ -876,6 +885,9 @@ int ChangeAInfo(AirEnemy** Aenemy, Player* player) {
 				//발사 준비 완료 되었다면 즉 폭파범위가 나올때라면
 				//DropPos를 지정한다.
 				Aenemy[i]->SetDropPos(player);
+
+				//사운드를 재생한다.
+				PlayAirShotSound(i);
 			}
 
 
