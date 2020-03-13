@@ -28,6 +28,6 @@ private:
 	int ScoreUp;
 };
 
-void CreateInterface(Interface** inter);				//사용할 객체 초기화
-void DeleteInterface(Interface** inter);				//사용된 객체 삭제
+void CreateInterface(Interface** inter, HINSTANCE hInst);				//사용할 객체 초기화
+void DeleteInterface(Interface** inter);								//사용된 객체 삭제
 //void PaintBackGround(HDC hdc, HDC Bithdc);

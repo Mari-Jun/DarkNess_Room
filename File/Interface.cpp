@@ -112,7 +112,7 @@ void Interface::PaintBackGroundLine(HDC hdc) {
 	SelectObject(hdc, OldBackGroundPen);
 }
 
-void CreateInterface(Interface** inter) {
+void CreateInterface(Interface** inter, HINSTANCE hInst) {
 	if (*inter == NULL) {
 		*inter = new Interface(1, 0 ,0);
 	}
@@ -122,9 +122,10 @@ void CreateInterface(Interface** inter) {
 	BackGroundPen1 = CreatePen(PS_SOLID, 1, RGB(50, 50, 50));
 
 	for (int i = 0; i < 4; i++) {
-		wchar_t str[100];
+		/*wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\Interface%d.bmp", i + 1);
-		BackGroundBit[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		BackGroundBit[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
+		BackGroundBit[i] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_Interface1 + i));
 	}
 
 	InterfaceFont1 = CreateFontW(50, 15, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Algerian"));

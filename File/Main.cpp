@@ -12,13 +12,15 @@
 #include "LevelSet.hpp"
 
 
-
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
+
+HINSTANCE hInst;
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ int nCmdShow) {
 	HWND hwnd1;
 	WNDCLASS WndClass1;
 	MSG msg;
+	hInst = hInstance;
 
 	WndClass1.style = CS_HREDRAW | CS_VREDRAW;
 	WndClass1.lpfnWndProc = WndProc;
@@ -59,37 +61,23 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static HDC hdc, mem1dc;
 
-	//StartPage HDC
-	static HDC Startdc1, Startdc2;
-
-	//RankPage HDC
-	static HDC Rankdc1, Rankdc2;
-
-	//GamePlay HDC 1: 기본, 2: 비트맵 3: 블렌딩
-	static HDC Gamedc1, Gamedc2, Gamedc3;
-
-	//HelpPage HDC
-	static HDC Helpdc1;
-
-	//PlayerDC
-	static HDC Playerdc;
-
-	PAINTSTRUCT ps;
-
+	//모든 화면의 HDC
+	//HDC 1: 비트맵, 2: 글씨등 기본 3: 블렌딩
+	static HDC Gamedc[3];
+	
 	//기본 더블버퍼링을 위한 비트맵
 	static HBITMAP Bitmap, OldBitmap;
 
-	//StartPage를 위한 비트맵 1 : 배경 이미지, 2 : 텍스트
-	static HBITMAP MainPageBit1, MainPageBit2;
+	//모든 페이지를 위한 비트맵
+	static HBITMAP GamePlayBit[3];
 
-	//RankPage를 위한 비트맵 
-	static HBITMAP RankPageBit1, RankPageBit2;
-
-	//GamePlay페이지를 위한 비트맵
-	static HBITMAP GamePlayBit1, GamePlayBit2, GamePlayBit3;
+	//알파블렌딩
+	static BLENDFUNCTION bf1, bf2;
 
 	//GamePlay페이지를 위한 폰트
 	static HFONT GamePlayFont;
+
+	PAINTSTRUCT ps;
 
 	//클래스 객체들
 	static Player* player;
@@ -103,6 +91,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	static WideEnemy* WEnemy;
 	static BombEnemy* BEnemy[BENEMYMAX];
 	static AirEnemy* AEnemy[AENEMYMAX];
+	static LevelSet* Level;
 
 	//마우스 좌표
 	static int Mx, My;
@@ -121,18 +110,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 
 	//GamePage시작시 효과 구현을 위해 필요한 변수
 	static int GamePageLoading = 0;
-
-	//현재 에너미별 발사 된 수
-	static int LShot = 0, BShot = 0, AShot = 0;
-
-	//최대 에너미별 발사 수
-	static int LMaxShot = 0, WMaxShot = 0, BMaxShot = 0, AMaxShot = 0;
-
-	//발사 대기 시간 설정
-	static int LWT = 0, WWT = 0, BWT = 0, AWT = 0;
-
-	//알파블렌딩
-	static BLENDFUNCTION bf1, bf2;
 
 	//Level이 올라가는 시간
 	static int LevelTime = 0;
@@ -178,6 +155,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 		My = HIWORD(lParam);
 		if (MainCreate) {
 			if (Page == 1) {
+				//StartPage(MainPage)일 경우
 				Page = Main->ChangeMainPage(My, Mx);
 				if (Page == 2) {
 					//Page2는 HelpPage이다.
@@ -189,7 +167,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					DeleteMainPage(&Main);
 
 					//HelpPage 생성
-					CreateHelpPage(&Help);
+					CreateHelpPage(&Help, hInst);
 				}
 				else if (Page == 3) {
 					//Page3은 GameLoading페이지이다.
@@ -252,10 +230,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				DeleteRankPage(&Rank);
 
 				//HDC, BitMap 지우기
-				DeleteObject(RankPageBit1);
-				DeleteObject(RankPageBit2);
-				DeleteDC(Rankdc1);
-				DeleteDC(Rankdc2);
+				for (int i = 0; i < 2; i++) {
+					DeleteObject(GamePlayBit[i]);
+					DeleteDC(Gamedc[i]);
+				}
 
 				//캐럿 숨기기
 				HideCaret(hwnd);
@@ -316,6 +294,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 	case WM_TIMER:
 		switch (wParam) {
 		case 1:
+			//LoadingPage Timer1
+
 			//Count를 1씩 증가
 			LoadingCount++;
 			if (LoadingCount == 200) {
@@ -337,25 +317,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//MainPage에서 필요한 HDC, BITMAP들 생성
 				hdc = GetDC(hwnd);
 
-				//MainPageBit1 = 비트맵
-				MainPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\StartBackGround.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+				//GamePlayBit[0] = 비트맵
+				//GamePlayBit[0] = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\StartBackGround.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+				GamePlayBit[0] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_StarkBackground));
 
-				//MainPageBit2 = 그 이외의 것들
-				MainPageBit2 = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
+				//GamePlayBit[1] = 그 이외의 것들
+				GamePlayBit[1] = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
 
-				//Startdc1 = 비트맵
-				Startdc1 = CreateCompatibleDC(hdc);
-				//Startdc2 = 글씨
-				Startdc2 = CreateCompatibleDC(hdc);
-
+				//Gamedc[0] = 비트맵 Gamedc[1] = 글씨 Gamedc[2] = HelpPage
+				for(int i=0; i<3; i++)
+					Gamedc[i] = CreateCompatibleDC(hdc);
+	
 				//HelpPage에서 필요한 HDC, BITMAP들 생성
-				Helpdc1 = CreateCompatibleDC(hdc);
 
-				SelectObject(Startdc1, MainPageBit1);
-				SelectObject(Startdc2, MainPageBit2);
+				SelectObject(Gamedc[0], GamePlayBit[0]);
+				SelectObject(Gamedc[1], GamePlayBit[1]);
 
 				//텍스트의 배경을 투명한 색으로 지정함.
-				SetBkMode(Startdc2, TRANSPARENT);
+				SetBkMode(Gamedc[1], TRANSPARENT);
 
 				ReleaseDC(hwnd, hdc);
 
@@ -370,6 +349,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			}
 			break;
 		case 2:
+			//MainPage 페이드 타이머
+
 			//StartPage화면 페이드 시작
 			if (MainBitPade < 17)
 				MainBitPade++;
@@ -393,6 +374,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			}
 			break;
 		case 3:
+			//MainPage 번개 타이머
+
 			if (LightCount == 0) 
 				//번개 효과음 재생
 				PlayLightningSound();
@@ -410,9 +393,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			}
 			break;
 		case 4:
+			//MainPage 종료 (Start버튼 눌렀을 경우) 타이머
+
 			if (Page == 1) {
-				//StartPage 화면 페이드 구현을 위해 Page가 1인 상태임
-				//StartPage 화면 페이드 아웃 시작
+				//MainPage 화면 페이드 구현을 위해 Page가 1(MainPage)인 상태임
+				//MainPage 화면 페이드 아웃 시작
 				MainBitPade--;
 				MainTextPade--;
 
@@ -432,7 +417,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				}
 			}
 		
-			//여기부터는 Page가 3인 상태
+			//여기부터는 Page가 3(LoadingPage2)인 상태
 			if (Page == 3) {
 				if (LoadingCount == 0) {
 					//모든 사운드 제거
@@ -442,11 +427,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					CreateLoadingPage();
 
 					//MainPage에서 사용된 HDC, BITMAP들 삭제
-					DeleteObject(MainPageBit1);
-					DeleteObject(MainPageBit2);
-					DeleteDC(Startdc1);
-					DeleteDC(Startdc2);
-					DeleteDC(Helpdc1);
+					for (int i = 0; i < 3; i++) {
+						DeleteObject(GamePlayBit[i]);
+						DeleteDC(Gamedc[i]);
+					}
+					
 				}
 				if(LoadingCount<100)
 					LoadingCount++;
@@ -456,42 +441,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					Page = 10;
 
 					//인터페이스를 생성한다.
-					CreateInterface(&Inter);
+					CreateInterface(&Inter, hInst);
 
 					//게임 BGM을 실행한다.
 					PlayGameBKSound();
 
 					//플레이어 생성
-					CreatePlayer(&player);
+					CreatePlayer(&player, hInst);
 
 					//카메라 생성
 					CreateCamera(&camera);
 
 					//적 생성
-					CreateLEnemy(LEnemy);
-					CreateWEnemy(&WEnemy);
-					CreateBEnemy(BEnemy);
-					CreateAEnemy(AEnemy);
+					CreateLEnemy(LEnemy, hInst);
+					CreateWEnemy(&WEnemy, hInst);
+					CreateBEnemy(BEnemy, hInst);
+					CreateAEnemy(AEnemy, hInst);
+
+					//레벨세팅 생성
+					CreateLevelSet(&Level);
 
 					//GamePage를 위한 HDC, BITMAP들 생성
 					
 					hdc = GetDC(hwnd);
 
-					Gamedc1 = CreateCompatibleDC(hdc);
-					Gamedc2 = CreateCompatibleDC(hdc);
-					Gamedc3 = CreateCompatibleDC(hdc);
-
-					//뒤에 배경 비트맵이 있기 때문에 가능하다.
-					//없다면 PAINT에 넣어줘야 한다.
-					GamePlayBit1 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
-					GamePlayBit2 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
-					GamePlayBit3 = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
+					for (int i = 0; i < 3; i++) {
+						Gamedc[i] = CreateCompatibleDC(hdc);
+						GamePlayBit[i] = CreateCompatibleBitmap(hdc, ALLMAPX, ALLMAPY);
+						SelectObject(Gamedc[i], GamePlayBit[i]);
+					}
 
 					GamePlayFont = CreateFontW(240, 60, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Vladimir Script"));
-
-					SelectObject(Gamedc1, GamePlayBit1);
-					SelectObject(Gamedc2, GamePlayBit2);
-					SelectObject(Gamedc3, GamePlayBit3);
 
 					SelectObject(mem1dc, GamePlayFont);
 
@@ -534,9 +514,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//GamePage에서 생성된 객체들 모두 삭제
 				//Interface는 제외 RankPage에서도 사용됨
 
-				//게임 BGM을 실행한다.
-				//PlayGameBKSound();
-
 				//플레이어 제거
 				DeletePlayer(&player);
 
@@ -549,19 +526,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				DeleteBEnemy(BEnemy);
 				DeleteAEnemy(AEnemy);
 
+				//레벨 세팅 제거
+				DeleteLevelSet(&Level);
+
 				//GamePage를 위한 HDC, BITMAP들 제거
-				DeleteDC(Gamedc1);
-				DeleteDC(Gamedc2);
-				DeleteDC(Gamedc3);
-				DeleteObject(GamePlayBit1);
-				DeleteObject(GamePlayBit2);
-				DeleteObject(GamePlayBit3);
-
-				//GamePage Sound 제거
-				GamePageSoundStop();
-
-				//RankPageSound 출력
-				PlayRankPageSound();
+				for (int i = 0; i < 3; i++) {
+					DeleteObject(GamePlayBit[i]);
+					DeleteDC(Gamedc[i]);
+				}
 
 				//Page RankPage인 5로 변경
 				Page = 5;
@@ -569,34 +541,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//RankPage 생성
 				CreateRankPage(&Rank);
 
-				//캐럿 생성
-				CreateCaret(hwnd, NULL, 15, 40);
-				ShowCaret(hwnd);
-
-				//RankPage에서 필요한 HDC, BITMAP들 생성
-				hdc = GetDC(hwnd);
-
-				//RankPageBit1 = 비트맵
-				RankPageBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\RankPage.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
-				//RankPageBit2 = 그 이외의 것들
-				RankPageBit2 = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
-
-				Rankdc1 = CreateCompatibleDC(hdc);
-				Rankdc2 = CreateCompatibleDC(hdc);
-
-				SelectObject(Rankdc1, RankPageBit1);
-				SelectObject(Rankdc2, RankPageBit2);
-
-				SetBkMode(Rankdc2, TRANSPARENT);
-
-				ReleaseDC(hwnd, hdc);
-
 				//현재 플레이어 스코어 저장
 				Ranking = Rank->CreateRank(Inter);			
 
 				//인터페이스 제거
 				DeleteInterface(&Inter);
+
+				//RankPage에서 필요한 HDC, BITMAP들 생성
+				hdc = GetDC(hwnd);
+
+				//GamePlayBit[0] = 비트맵
+				//GamePlayBit[0] = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\RankPage.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+				GamePlayBit[0] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_RankPage));
+
+				//GamePlayBit[1] = 그 이외의 것들
+				GamePlayBit[1] = CreateCompatibleBitmap(hdc, ScreenX, ScreenY);
+
+				for (int i = 0; i < 2; i++) {
+					Gamedc[i] = CreateCompatibleDC(hdc);
+					SelectObject(Gamedc[i], GamePlayBit[i]);
+				}
+
+				SetBkMode(Gamedc[1], TRANSPARENT);
+
+				ReleaseDC(hwnd, hdc);
+
+				//캐럿 생성
+				CreateCaret(hwnd, NULL, 15, 40);
+				ShowCaret(hwnd);
+
+				//GamePage Sound 제거
+				GamePageSoundStop();
+
+				//RankPageSound 출력
+				PlayRankPageSound();
 
 				//ScoreRankTimer실행
 				SetTimer(hwnd, 6, 10, NULL);
@@ -623,10 +601,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 					PlayLevelUpSound();
 
 					//에너미들 초기화
-					ResetLEnemy(LEnemy);
-					ResetWEnemy(WEnemy);
-					ResetBEnemy(BEnemy);
-					ResetAEnemy(AEnemy);
+					AllEnemyReset(LEnemy, WEnemy, BEnemy, AEnemy);
 					player->ResetHitCheck();
 				}
 			}
@@ -667,34 +642,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			//에너미 타이머
 
 			//레벨에 따른 세팅을 한다.
-			LevelSetting(Inter->GetLevel(), LMaxShot, WMaxShot, BMaxShot, AMaxShot);
-			WaitTimeSet(Inter->GetLevel(), LWT, WWT, BWT, AWT);
+			Level->LevelSetting(Inter->GetLevel());
+			Level->WaitTimeSetting(Inter->GetLevel());
 
 			if (LevelTime > 10) {
 				//LevelTime이 10이상일때 설정한다.
 				//LevelTime이 10이하일 경우는 인터페이스에 LEVEL표시를 그려준다. 즉 LEVEL당 텀이 있게 만든다.
 
-				//LineEnmey
-				for (LShot; LShot < LMaxShot; LShot++) {
-					SelectLShot(LEnemy, LWT);
-				}
-				LShot = ChangeLInfo(LEnemy, player);
-
-				//WideEnemy
-				if (WMaxShot == 1)
-					ChangeWInfo(WEnemy, player, WWT);
-
-				//BombEnemy;
-				for (BShot; BShot < BMaxShot; BShot++) {
-					SelectBShot(BEnemy, BWT);
-				}
-				BShot = ChangeBInfo(BEnemy, player);
-
-				//AirEnemy
-				for (AShot; AShot < AMaxShot; AShot++) {
-					SelectAShot(AEnemy, player, AWT);
-				}
-				AShot = ChangeAInfo(AEnemy, player);
+				//적들을 설정한다.
+				AllEnemySet(LEnemy, WEnemy, BEnemy, AEnemy, player, Level);
 
 				//플레이어가 적의 공격에 맞았는지 확인한다.
 				player->CheckHitCheck(Inter);
@@ -727,109 +683,93 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 			bf1.SourceConstantAlpha = MainBitPade * 15;
 			
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
-			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Startdc1, 0, 0,ScreenX, ScreenY, bf1);
+			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Gamedc[0], 0, 0,ScreenX, ScreenY, bf1);
 
-			//mem1dc에 그려진걸 Startdc2에 복사한다.
-			BitBlt(Startdc2, 0, 0, ScreenX, ScreenY, mem1dc, 0, 0, SRCCOPY);
+			//mem1dc에 그려진걸 Gamedc[1]에 복사한다.
+			BitBlt(Gamedc[1], 0, 0, ScreenX, ScreenY, mem1dc, 0, 0, SRCCOPY);
 
-			//Startdc2에 Page들을 Paint한다.
+			//Gamedc[1]에 Page들을 Paint한다.
 			if (Page == 1) {
 				//StartPage그리기
-				Main->PaintMainPage(Startdc2);
+				Main->PaintMainPage(Gamedc[1]);
 			}
 			else if (Page == 2) {
 				//HelpPage 그리기
-				Help->PaintHelpPage(Startdc2, Helpdc1);
+				Help->PaintHelpPage(Gamedc[1], Gamedc[2]);
 			}
 			else {
 				//CreditPage 그리기
-				Credit->PaintCreditPage(Startdc2);
+				Credit->PaintCreditPage(Gamedc[1]);
 			}
 
 			//알파블렌딩 (투명화)를 위한 작업
 			bf2.SourceConstantAlpha = MainTextPade * 15;
 
 			//알파 블렌딩으로 페이드인, 페이드 아웃 구현
-			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Startdc2, 0, 0, ScreenX, ScreenY, bf2);
+			AlphaBlend(mem1dc, 0, 0, ScreenX, ScreenY, Gamedc[1], 0, 0, ScreenX, ScreenY, bf2);
 		}
 		else if (Page == 3) {
 			//GamePage 로딩 페이지 그리기
 			PaintLoadingPage(mem1dc, LoadingCount * 2, Page);
 		}
 		else if (Page == 5) {
-			//Rankdc1에 그려진걸 mem1dc에 복사한다.
-			BitBlt(Rankdc2, 0, 0, ScreenX, ScreenY, Rankdc1, 0, 0, SRCCOPY);
+			//Gamedc[0]에 그려진걸 Gamedc[1]에 복사한다.
+			BitBlt(Gamedc[1], 0, 0, ScreenX, ScreenY, Gamedc[0], 0, 0, SRCCOPY);
 
 			//RankPage 그리기
-			Rank->PaintRankPage(Rankdc2, Ranking);
+			Rank->PaintRankPage(Gamedc[1], Ranking);
 
-			//Rankdc2에 그려진걸 Rankdc1에 복사한다.
-			BitBlt(mem1dc, 0, 0, ScreenX, ScreenY, Rankdc2, 0, 0, SRCCOPY);
+			//Gamedc[1]에 그려진걸 mem1dc에 복사한다.
+			BitBlt(mem1dc, 0, 0, ScreenX, ScreenY, Gamedc[1], 0, 0, SRCCOPY);
 
 		
 		}
 		else if (Page == 10) {
 			//GamePage 그리기
 
-			//Gamedc1에 GameMap을 그려준다.
-			Inter->PaintBackGround(Gamedc1, Gamedc2);			
-			Inter->PaintInterface(Gamedc1);
+			//Gamedc[1]에 GameMap을 그려준다.
+			Inter->PaintBackGround(Gamedc[1], Gamedc[0]);			
+			Inter->PaintInterface(Gamedc[1]);
 
-			//발사체들을 Gamedc1에 그려준다.
-			for (int L = 0; L < LENEMYMAX; L++)
-				LEnemy[L]->PaintShot(Gamedc1, Gamedc2, Gamedc3);
-			WEnemy->PaintShot(Gamedc1, Gamedc2, Gamedc3);
-			for (int B = 0; B < BENEMYMAX; B++)
-				BEnemy[B]->PaintShot(Gamedc1, Gamedc2, Gamedc3);
-			for (int A = 0; A < AENEMYMAX; A++)
-				AEnemy[A]->PaintShot(Gamedc1, Gamedc2, Gamedc3);
+			//적을 그려준다.
+			AllEnemyPaint(LEnemy, WEnemy, BEnemy, AEnemy, Gamedc);
 
-			//에너미들을 Gamedc1에 그려준다.
-			for (int L = 0; L < LENEMYMAX; L++)
-				LEnemy[L]->PaintEnmey(Gamedc1, Gamedc2);
-			WEnemy->PaintEnmey(Gamedc1, Gamedc2);
-			for (int B = 0; B < BENEMYMAX; B++)
-				BEnemy[B]->PaintEnmey(Gamedc1, Gamedc2);
-			for (int A = 0; A < AENEMYMAX; A++)
-				AEnemy[A]->PaintEnmey(Gamedc1, Gamedc2);
-
-
-			//플레이어 관련을 Gamedc1에 그려준다.
-			player->PaintPlayer(Gamedc1, Gamedc2);
-			player->PaintPlayerIF(Gamedc1, Gamedc2);
+			//플레이어 관련을 Gamedc[1]에 그려준다.
+			player->PaintPlayer(Gamedc[1], Gamedc[0]);
+			player->PaintPlayerIF(Gamedc[1], Gamedc[0]);
 
 			//GameMap 선들을 그려준다.
-			Inter->PaintBackGroundLine(Gamedc1);
+			Inter->PaintBackGroundLine(Gamedc[1]);
 
-			//Gamedc1에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.
+			//Gamedc[1]에 있는 맵을 실제 출력되는 mem1dc에 알맞게 복사한다.
 
 			//위쪽 테두리 복사
 			if(GamePageLoading<30)
 				//30미만까지는 GamePageLoading의 크기 만큼 복사한다.
-				BitBlt(mem1dc, 0, 0, 1280, GamePageLoading, Gamedc1, 0, 0, SRCCOPY);
+				BitBlt(mem1dc, 0, 0, 1280, GamePageLoading, Gamedc[1], 0, 0, SRCCOPY);
 			else
 				//30이상이 되면 다 로딩이 됬기 떄문에 그냥 30의 크기만큼 복사한다.
-				BitBlt(mem1dc, 0, 0, 1280, 30, Gamedc1, 0, 0, SRCCOPY);
+				BitBlt(mem1dc, 0, 0, 1280, 30, Gamedc[1], 0, 0, SRCCOPY);
 
 			//왼쪽 / 오른쪽 테두리 복사
 			if (GamePageLoading < 700) {
 				//700미만까지는 GamePageLoading의 크기 만큼 복사한다.
-				BitBlt(mem1dc, 0, 0, 30, GamePageLoading, Gamedc1, 0, 0, SRCCOPY);
-				BitBlt(mem1dc, 1250, 0, 30, GamePageLoading, Gamedc1, ALLMAPX - 30, 0, SRCCOPY);
+				BitBlt(mem1dc, 0, 0, 30, GamePageLoading, Gamedc[1], 0, 0, SRCCOPY);
+				BitBlt(mem1dc, 1250, 0, 30, GamePageLoading, Gamedc[1], ALLMAPX - 30, 0, SRCCOPY);
 			}
 			else {
 				//700이상이 되면 다 로딩이 됬기 떄문에 그냥 700의 크기만큼 복사한다.
-				BitBlt(mem1dc, 0, 0, 30, 700, Gamedc1, 0, 0, SRCCOPY);
-				BitBlt(mem1dc, 1250, 0, 30, 700, Gamedc1, ALLMAPX - 30, 0, SRCCOPY);
+				BitBlt(mem1dc, 0, 0, 30, 700, Gamedc[1], 0, 0, SRCCOPY);
+				BitBlt(mem1dc, 1250, 0, 30, 700, Gamedc[1], ALLMAPX - 30, 0, SRCCOPY);
 			}
 				
 			if (GamePageLoading >= 700) {
 				//700이상이 되어야만 복사를 시작한다.
 				//플레이어 인터페이스 복사
-				BitBlt(mem1dc, 0, 700, ScreenX, GamePageLoading - 700, Gamedc1, 0, ALLMAPY - 120, SRCCOPY);
+				BitBlt(mem1dc, 0, 700, ScreenX, GamePageLoading - 700, Gamedc[1], 0, ALLMAPY - 120, SRCCOPY);
 
 				//인터페이스 오른쪽 테두리 복사
-				BitBlt(mem1dc, ScreenX - 30, 700, 30, GamePageLoading - 700, Gamedc1, ALLMAPX - 30, ALLMAPY - 120, SRCCOPY);
+				BitBlt(mem1dc, ScreenX - 30, 700, 30, GamePageLoading - 700, Gamedc[1], ALLMAPX - 30, ALLMAPY - 120, SRCCOPY);
 			}
 			
 			if (GamePageLoading >= 30) {
@@ -837,10 +777,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam) {
 				//벽 안 복사
 				if (GamePageLoading < 700)
 					//700미만까지는 GamePageLoading의 크기 만큼 복사한다.
-					BitBlt(mem1dc, 30, 30, 1220, GamePageLoading - 30, Gamedc1, camera->GetCLeft(), camera->GetCTop(), SRCCOPY);
+					BitBlt(mem1dc, 30, 30, 1220, GamePageLoading - 30, Gamedc[1], camera->GetCLeft(), camera->GetCTop(), SRCCOPY);
 				else
 					//700이상이 되면 다 로딩이 됬기 떄문에 그냥 670의 크기만큼 복사한다.
-					BitBlt(mem1dc, 30, 30, 1220, 670, Gamedc1, camera->GetCLeft(), camera->GetCTop(), SRCCOPY);
+					BitBlt(mem1dc, 30, 30, 1220, 670, Gamedc[1], camera->GetCLeft(), camera->GetCTop(), SRCCOPY);
 			}
 
 			if (LevelTime > 0 && LevelTime <= 10) {

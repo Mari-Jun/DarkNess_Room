@@ -39,6 +39,6 @@ private:
 	int CreditClick;
 };
 
-void CreateHelpPage(HelpPage** Help);										//HelpPage를 만들기 위한 객체들 생성
+void CreateHelpPage(HelpPage** Help, HINSTANCE hInst);						//HelpPage를 만들기 위한 객체들 생성
 void DeleteHelpPage(HelpPage** Help);										//HelpPage를 위해 만들어진 객체들 삭제
 

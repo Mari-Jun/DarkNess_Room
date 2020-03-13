@@ -8,6 +8,7 @@
 #include <mmsystem.h>
 #include <wingdi.h>
 #include <fmod.h>
+#include "resource.h"
 
 #pragma comment(lib,"winmm")
 #pragma comment(lib,"fmodL_vc.lib")

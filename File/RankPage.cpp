@@ -200,14 +200,14 @@ void DeleteRankPage(RankPage** Rank){
 void RankSet(RankPage* Rank) {
 	//처음 RankPage가 생성되었을때 Rank들을 세팅해준다.
 	Rank->ChangeRank(0, 109999999);
-	Rank->ChangeRank(1, 100456123);
-	Rank->ChangeRank(2, 90264553);
-	Rank->ChangeRank(3, 90213564);
-	Rank->ChangeRank(4, 80200000);
-	Rank->ChangeRank(5, 60195321);
-	Rank->ChangeRank(6, 50153232);
-	Rank->ChangeRank(7, 40098325);
-	Rank->ChangeRank(8, 10001111);
+	Rank->ChangeRank(1, 105456123);
+	Rank->ChangeRank(2, 103264553);
+	Rank->ChangeRank(3, 91213564);
+	Rank->ChangeRank(4, 81000000);
+	Rank->ChangeRank(5, 60695321);
+	Rank->ChangeRank(6, 50553232);
+	Rank->ChangeRank(7, 40398325);
+	Rank->ChangeRank(8, 10101111);
 	Rank->ChangeRank(9, 0);
 
 	Rank->ChangeName(0, L"NekoMari");

@@ -90,7 +90,7 @@ void HelpPage::PaintHelpPage(HDC hdc, HDC Bithdc) const {
 		TextOut(hdc, 450, 380, _T("Health :"), 8);
 		TextOut(hdc, 710, 380, _T("X 100"), 5);
 		TextOut(hdc, 260, 460, _T("Skill1 : Q"), 10);
-		TextOut(hdc, 600, 460, _T("[Healing Your HP20]"), 19);
+		TextOut(hdc, 600, 460, _T("[Healing Your HP10]"), 19);
 		TextOut(hdc, 260, 540, _T("Skill2 : W"), 10);
 		TextOut(hdc, 600, 540, _T("[Delay The Time]"), 16);
 		TextOut(hdc, 260, 620, _T("Skill3 : E"), 10);
@@ -200,7 +200,7 @@ void HelpPage::MouseUpCheck(const int y, const int x) {
 	}
 }
 
-void CreateHelpPage(HelpPage** Help) {
+void CreateHelpPage(HelpPage** Help, HINSTANCE hInst) {
 
 	//HelpPage에 사용될 폰트들을 생성해준다.
 	HelpPageFont1 = CreateFontW(240, 60, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Vladimir Script"));
@@ -208,15 +208,21 @@ void CreateHelpPage(HelpPage** Help) {
 	HelpPageFont3 = CreateFontW(50, 20, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
 
 	//HelpPage에 사용될 비트맵 이미지들을 생성한다.
-	ItemBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillQ.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	/*ItemBit1 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillQ.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	ItemBit2 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillW.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	ItemBit3 = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillE.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-	HealtBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	HealtBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health1.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
+
+	ItemBit1 = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_SkillQ));
+	ItemBit2 = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_SkillW));
+	ItemBit3 = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_SkillE));
+	HealtBit = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_Health1));
 
 	for (int i = 0; i < 4; i++) {
-		wchar_t str[100];
+		/*wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\Enemy%d.bmp", i + 1);
-		EBit[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		EBit[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/	
+		EBit[i] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_Enemy1 + i));
 	}
 
 	if (*Help == NULL) {

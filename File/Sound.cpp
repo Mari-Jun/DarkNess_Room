@@ -22,7 +22,8 @@ void SoundInit() {
 	//4: 레벨 업 소리
 	FMOD_System_CreateStream(M_System, ".\\Sound\\LevelUp.mp3", FMOD_LOOP_OFF, 0, &M_Sound[4]);
 
-	//5,6,7 Wide,Bomb,Air Eemey Shot Sound
+	//12,5,6,7 Wide,Bomb,Air Eemey Shot Sound
+	FMOD_System_CreateStream(M_System, ".\\Sound\\LineShot.mp3", FMOD_LOOP_OFF, 0, &M_Sound[12]);
 	FMOD_System_CreateStream(M_System, ".\\Sound\\WideShot.mp3", FMOD_LOOP_OFF, 0, &M_Sound[5]);
 	FMOD_System_CreateStream(M_System, ".\\Sound\\Bomb.mp3", FMOD_LOOP_OFF, 0, &M_Sound[6]);
 	FMOD_System_CreateStream(M_System, ".\\Sound\\AirShot.mp3", FMOD_LOOP_OFF, 0, &M_Sound[7]);
@@ -68,24 +69,29 @@ void PlayLevelUpSound() {
 	FMOD_System_PlaySound(M_System, M_Sound[4], NULL, FALSE, &M_Channel[1]);
 }
 
+void PlayLineShotSound() {
+	//효과음 LineShot을 재생한다.
+	FMOD_System_PlaySound(M_System, M_Sound[12], NULL, FALSE, &M_Channel[2]);
+}
+
 void PlayWideShotSound() {
 	//효과음 WideShot을 재생한다.
-	FMOD_System_PlaySound(M_System, M_Sound[5], NULL, FALSE, &M_Channel[2]);
+	FMOD_System_PlaySound(M_System, M_Sound[5], NULL, FALSE, &M_Channel[3]);
 }
 
 void PlayBombShotSound(int Num) {
 	//효과음 BombShot을 재생한다.
 
-	//Num은 Bomb적의 숫자 8개중 한개 즉3~10
+	//Num은 Bomb적의 숫자 8개중 한개 즉4~11
 
-	FMOD_System_PlaySound(M_System, M_Sound[6], NULL, FALSE, &M_Channel[3+Num]);
+	FMOD_System_PlaySound(M_System, M_Sound[6], NULL, FALSE, &M_Channel[4+Num]);
 }
 
 void PlayAirShotSound(int Num) {
 	//효과음 AirShot을 재생한다.
 
-	//Num은 Air적의 숫자 2개중 한개 즉11~12
-	FMOD_System_PlaySound(M_System, M_Sound[7], NULL, FALSE, &M_Channel[11+Num]);
+	//Num은 Air적의 숫자 2개중 한개 즉12~13
+	FMOD_System_PlaySound(M_System, M_Sound[7], NULL, FALSE, &M_Channel[12+Num]);
 }
 
 void PlayRankPageSound() {
@@ -97,19 +103,19 @@ void PlayRankPageSound() {
 void PlaySkillQSound() {
 	//효과음 SkillQ을 재생한다.
 
-	FMOD_System_PlaySound(M_System, M_Sound[9], NULL, FALSE, &M_Channel[13]);
+	FMOD_System_PlaySound(M_System, M_Sound[9], NULL, FALSE, &M_Channel[14]);
 }
 
 void PlaySkillWSound() {
 	//효과음 SkillW을 재생한다.
 
-	FMOD_System_PlaySound(M_System, M_Sound[10], NULL, FALSE, &M_Channel[14]);
+	FMOD_System_PlaySound(M_System, M_Sound[10], NULL, FALSE, &M_Channel[15]);
 }
 
 void PlaySkillESound() {
 	//효과음 SkillE을 재생한다.
 
-	FMOD_System_PlaySound(M_System, M_Sound[11], NULL, FALSE, &M_Channel[15]);
+	FMOD_System_PlaySound(M_System, M_Sound[11], NULL, FALSE, &M_Channel[16]);
 }
 
 
@@ -119,6 +125,6 @@ void MainPageSoundStop() {
 }
 
 void GamePageSoundStop() {
-	for(int i=0; i<16; i++)
+	for(int i=0; i<17; i++)
 		FMOD_Channel_Stop(M_Channel[i]);
 }

@@ -73,6 +73,6 @@ private:
 	int HitCheck[21][21];
 };
 
-void CreatePlayer(Player** player);					//Player를 만들기 위한 객체들 생성
-void DeletePlayer(Player** player);					//Player를 위해 만들어진 객체들 삭제
+void CreatePlayer(Player** player, HINSTANCE hInst);		//Player를 만들기 위한 객체들 생성
+void DeletePlayer(Player** player);							//Player를 위해 만들어진 객체들 삭제
 

@@ -260,7 +260,7 @@ void Player::UseSkillQ() {
 	SkillQ = 20;
 
 	//효과 발동
-	Health += 20;
+	Health += 10;
 	if (Health > 100)
 		Health = 100;
 }
@@ -383,7 +383,7 @@ void Player::PaintPlayerIF(HDC hdc, HDC Bithdc) const {
 }
 
 
-void CreatePlayer(Player** player) {
+void CreatePlayer(Player** player, HINSTANCE hInst) {
 	PlayerIFBrush1 = CreateSolidBrush(RGB(0, 0, 0));
 	PlayerBrush1 = CreateSolidBrush(RGB(255, 216, 216));
 
@@ -392,14 +392,22 @@ void CreatePlayer(Player** player) {
 	PlayerIFFont1 = CreateFontW(50, 15, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Algerian"));
 	PlayerIFFont2 = CreateFontW(30, 10, 0, 0, FW_BOLD, FALSE, FALSE, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, _T("Curlz MT"));
 
-	HealthBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	/*HealthBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Health.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
 	SKillQBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillQ.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	SKillWBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillW.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 	SKillEBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\SkillE.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
 
-	SkillEUseBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Shield.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	SkillEUseBit = (HBITMAP)LoadImage(NULL, _T(".\\BitMap\\Shield.bmp"), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
 
+	HealthBit = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_Health));
+
+	SKillQBit = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_SkillQ));
+	SKillWBit = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_SkillW));
+	SKillEBit = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_SkillE));
+
+
+	SkillEUseBit = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_Shield));
 	
 	if (*player == NULL) {
 		//*player가 NULL일 경우 생성한다.

@@ -5,6 +5,7 @@ static HBRUSH OldEBrush;
 static HPEN OldEPen;
 
 class Player;
+class LevelSet;
 
 //기본 에너미
 class Enemy {
@@ -87,7 +88,7 @@ private:
 	int Direction;												//포 방향
 };
 
-void CreateLEnemy(LineEnemy** Lenemy);
+void CreateLEnemy(LineEnemy** Lenemy, HINSTANCE hInst);
 void DeleteLEnemy(LineEnemy** Lenemy);
 void SelectLShot(LineEnemy** Lenemy, const int WaitTime);
 int ChangeLInfo(LineEnemy** Lenmey, Player* player);
@@ -120,7 +121,7 @@ private:
 	int Direction;												//광역 방향
 };
 
-void CreateWEnemy(WideEnemy** Wenemy);
+void CreateWEnemy(WideEnemy** Wenemy, HINSTANCE hInst);
 void DeleteWEnemy(WideEnemy** Wenemy);
 void ChangeWInfo(WideEnemy* WenemSy, Player* player, const int WaitTime);
 void ResetWEnemy(WideEnemy* Wenemy);
@@ -146,7 +147,7 @@ public:
 	virtual void PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const;			//폭탄적 폭탄을 그린다.
 };
 
-void CreateBEnemy(BombEnemy** Benemy);
+void CreateBEnemy(BombEnemy** Benemy, HINSTANCE hInst);
 void DeleteBEnemy(BombEnemy** Benemy);
 void SelectBShot(BombEnemy** Benemy, const int WaitTime);
 int ChangeBInfo(BombEnemy** Benemy, Player* player);
@@ -179,8 +180,15 @@ private:
 	int DYPos;
 };
 
-void CreateAEnemy(AirEnemy** Aenemy);
+void CreateAEnemy(AirEnemy** Aenemy, HINSTANCE hInst);
 void DeleteAEnemy(AirEnemy** Aenemy);
 void SelectAShot(AirEnemy** Aenemy, Player* player, const int WaitTime);
 int ChangeAInfo(AirEnemy** Aenemy, Player* player);
 void ResetAEnemy(AirEnemy** Aenemy);
+
+
+//전체 에너미 관리 시스템
+
+void AllEnemySet(LineEnemy** LEnemy, WideEnemy* WEnemy, BombEnemy** BEnemy, AirEnemy** AEnemy, Player* player, LevelSet* Level);
+void AllEnemyReset(LineEnemy** LEnemy, WideEnemy* WEnemy, BombEnemy** BEnemy, AirEnemy** AEnemy);
+void AllEnemyPaint(LineEnemy** LEnemy, WideEnemy* WEnemy, BombEnemy** BEnemy, AirEnemy** AEnemy, HDC Gamedc[]);

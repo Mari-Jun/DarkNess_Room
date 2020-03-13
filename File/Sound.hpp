@@ -20,6 +20,7 @@ void PlayGameBKSound();				//게임 진행 화면 BGM 재생
 void PlayLightningSound();			//번개 소리 재생
 void PlayButtonClickSound();		//버튼 클릭 소리 재생
 void PlayLevelUpSound();			//Level이 상승할때 나는 소리 재생
+void PlayLineShotSound();			//LineEnemy Shot
 void PlayWideShotSound();			//WideEnemy Shot
 void PlayBombShotSound(int Num);	//BombShotSound
 void PlayAirShotSound(int Num);		//AirEnemy Shot

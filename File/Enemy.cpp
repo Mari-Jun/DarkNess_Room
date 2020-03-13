@@ -2,6 +2,7 @@
 #include "Player.hpp"
 #include "Enemy.hpp"
 #include "Sound.hpp"
+#include "LevelSet.hpp"
 
 
 //기본 에너미
@@ -260,17 +261,19 @@ void LineEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 	}
 }
 
-void CreateLEnemy(LineEnemy** Lenemy) {
+void CreateLEnemy(LineEnemy** Lenemy, HINSTANCE hInst) {
 
 	for (int i = 0; i < 4; i++) {
-		wchar_t str[100];
+		/*wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\LineEnemy%d.bmp", i + 1);
-		LBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		LBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
+		LBitMap[i] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_LineEnemy1 + i));
 	}
 	for (int i = 0; i < 22; i++) {
-		wchar_t str[100];
+		/*wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\LineShot%d.bmp", i + 1);
-		LSBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		LSBitMap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
+		LSBitMap[i] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_LineShot1 + i));
 	}
 
 	LBrush = CreateHatchBrush(HS_FDIAGONAL, RGB(100, 0, 0));
@@ -347,6 +350,9 @@ int ChangeLInfo(LineEnemy** Lenemy, Player* player) {
 				//방금 충전이 됬을 경우
 				//SetHitCheck를 호출한다.
 				Lenemy[i]->SetHitCheck(player, true);
+
+				//소리 재생
+				PlayLineShotSound();
 			}
 
 			if (Lenemy[i]->ChangeCharging()) {
@@ -480,7 +486,7 @@ void WideEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 	}
 }
 
-void CreateWEnemy(WideEnemy** Wenemy) {
+void CreateWEnemy(WideEnemy** Wenemy, HINSTANCE hInst) {
 
 	//WideEnemyShotBrush, Pen (으)로 적의 포 색을 표현함.
 	WSBrush = CreateHatchBrush(HS_FDIAGONAL, RGB(178, 235, 244));
@@ -488,13 +494,16 @@ void CreateWEnemy(WideEnemy** Wenemy) {
 
 
 	//WideEnemy에서 사용될 Bitmap들을 불러온다.
-	WEBitmap1 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-	WEBitmap2 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy2.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	//WEBitmap1 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	//WEBitmap2 = (HBITMAP)LoadImage(NULL, L".\\BitMap\\WideEnemy2.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	WEBitmap1 = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WideEnemy1));
+	WEBitmap2 = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WideEnemy2));
 
 	for (int i = 0; i < 7; i++) {
-		wchar_t str[100];
+		/*wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\WideShot%d.bmp", i + 1);
-		WSBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		WSBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
+		WSBitmap[i] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_WideShot1 + i));
 	}
 
 	if (*Wenemy == NULL) {
@@ -631,16 +640,17 @@ void BombEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 	}
 }
 
-void CreateBEnemy(BombEnemy** Benemy) {
-
-	BBitmap = (HBITMAP)LoadImage(NULL, L".\\BitMap\\Bomb.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+void CreateBEnemy(BombEnemy** Benemy, HINSTANCE hInst) {
+	
+	//BBitmap = (HBITMAP)LoadImage(NULL, L".\\BitMap\\Bomb.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	BBitmap = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_Bomb));
 	for (int i = 0; i < 11; i++) {
-		wchar_t str[100];
+		/*wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\BombEX%d.bmp", i);
-		EXBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		EXBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
+		EXBitmap[i] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BombEX0 + i));
 	}
-		
-
+	
 	BBrush = CreateHatchBrush(HS_FDIAGONAL, RGB(150, 150, 150));
 	BPen = CreatePen(PS_SOLID, 1, RGB(100, 100, 100));
 
@@ -818,16 +828,18 @@ void AirEnemy::PaintShot(HDC hdc, HDC Bithdc, HDC Bithdc2) const {
 	}
 }
 
-void CreateAEnemy(AirEnemy** Aenemy) {
+void CreateAEnemy(AirEnemy** Aenemy, HINSTANCE hInst) {
 
 	//AirEnemy를 불러온다.
-	ABitmap = (HBITMAP)LoadImage(NULL, L".\\BitMap\\AirPlane1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	//ABitmap = (HBITMAP)LoadImage(NULL, L".\\BitMap\\AirPlane1.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	ABitmap = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_AirPlane1));
 
 	//AirEnemy샷을 불러온다.
 	for (int i = 0; i < 11; i++) {
-		wchar_t str[100];
+		/*wchar_t str[100];
 		swprintf_s(str, L".\\BitMap\\AirShot%d.bmp", i);
-		ASBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+		ASBitmap[i] = (HBITMAP)LoadImage(NULL, str, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
+		ASBitmap[i] = (HBITMAP)LoadBitmap(hInst, MAKEINTRESOURCE(IDB_AirShot1 + i));
 	}
 
 	ABrush = CreateHatchBrush(HS_FDIAGONAL, RGB(250, 237, 125));
@@ -933,4 +945,59 @@ void ResetAEnemy(AirEnemy** Aenemy) {
 	//AirEnemy Reset!
 	for (int A = 0; A < AENEMYMAX; A++)
 		Aenemy[A]->Reset();
+}
+
+void AllEnemySet(LineEnemy** LEnemy, WideEnemy* WEnemy, BombEnemy** BEnemy, AirEnemy** AEnemy, Player* player, LevelSet* Level) {
+	//LineEnmey
+	while (Level->GetLShot() < Level->GetLMaxShot()) {
+		SelectLShot(LEnemy, Level->GetLWT());
+		Level->ChangeLShot(Level->GetLShot() + 1);
+	}
+	Level->ChangeLShot(ChangeLInfo(LEnemy, player));
+
+	//WideEnemy
+	if (Level->GetWMaxShot() == 1)
+		ChangeWInfo(WEnemy, player, Level->GetWWT());
+
+	//BombEnemy;
+	while (Level->GetBShot() < Level->GetBMaxShot()) {
+		SelectBShot(BEnemy, Level->GetBWT());
+		Level->ChangeBShot(Level->GetBShot() + 1);
+
+	}
+	Level->ChangeBShot(ChangeBInfo(BEnemy, player));
+
+	//AirEnemy
+	while (Level->GetAShot() < Level->GetAMaxShot()) {
+		SelectAShot(AEnemy, player, Level->GetAWT());
+		Level->ChangeAShot(Level->GetAShot() + 1);
+	}
+	Level->ChangeAShot(ChangeAInfo(AEnemy, player));
+}
+
+void AllEnemyReset(LineEnemy** LEnemy, WideEnemy* WEnemy, BombEnemy** BEnemy, AirEnemy** AEnemy) {
+	ResetLEnemy(LEnemy);
+	ResetWEnemy(WEnemy);
+	ResetBEnemy(BEnemy);
+	ResetAEnemy(AEnemy);
+}
+
+void AllEnemyPaint(LineEnemy** LEnemy, WideEnemy* WEnemy, BombEnemy** BEnemy, AirEnemy** AEnemy, HDC Gamedc[]) {
+	//발사체들을 Gamedc[1]에 그려준다.
+	for (int L = 0; L < LENEMYMAX; L++)
+		LEnemy[L]->PaintShot(Gamedc[1], Gamedc[0], Gamedc[2]);
+	WEnemy->PaintShot(Gamedc[1], Gamedc[0], Gamedc[2]);
+	for (int B = 0; B < BENEMYMAX; B++)
+		BEnemy[B]->PaintShot(Gamedc[1], Gamedc[0], Gamedc[2]);
+	for (int A = 0; A < AENEMYMAX; A++)
+		AEnemy[A]->PaintShot(Gamedc[1], Gamedc[0], Gamedc[2]);
+
+	//에너미들을 Gamedc[1]에 그려준다.
+	for (int L = 0; L < LENEMYMAX; L++)
+		LEnemy[L]->PaintEnmey(Gamedc[1], Gamedc[0]);
+	WEnemy->PaintEnmey(Gamedc[1], Gamedc[0]);
+	for (int B = 0; B < BENEMYMAX; B++)
+		BEnemy[B]->PaintEnmey(Gamedc[1], Gamedc[0]);
+	for (int A = 0; A < AENEMYMAX; A++)
+		AEnemy[A]->PaintEnmey(Gamedc[1], Gamedc[0]);
 }
