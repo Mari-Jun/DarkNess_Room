@@ -34,4 +34,4 @@ Skill은 Q,W,E 3가지가 있고 Q는 체력 회복, W는 시간 둔화, E는 �
 
 게임 실행 영상 및 자세한 포트폴리오는 아래 링크로 들어가시면 있습니다.
 
-<a> /*아직 구현 안함 https://junhyeokportfolio.blogspot.com/2020/01/gametetris.html */
+<a> https://junhyeokportfolio.blogspot.com/2020/03/winapi-project-2-darkness-room.html
